@@ -13,6 +13,7 @@
     "format": "prettier --write \"**/*.{ts,js}\""
   },
   "devDependencies": {
+    "@types/bcrypt": "^6.0.0",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
     "@types/node": "^24.13.3",
@@ -20,11 +21,13 @@
     "typescript": "^6.0.3"
   },
   "dependencies": {
+    "@finance-tracker/db": "*",
+    "@finance-tracker/validation": "*",
+    "bcrypt": "^6.0.0",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^5.1.0",
     "mongoose": "^9.0.0",
-    "zod": "^4.1.13",
-    "@finance-tracker/db": "*"
+    "zod": "^4.1.13"
   }
 }
