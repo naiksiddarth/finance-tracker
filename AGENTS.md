@@ -22,6 +22,7 @@ This is an npm-workspaces monorepo orchestrated by Turborepo. Apps: `web` (Vite 
 
 - **Prettier is non-default**: `semi: false`, `singleQuote: false` (double quotes), and `prettier-plugin-tailwindcss` reorders Tailwind classes. Run `npm run format` rather than ad-hoc formatting.
 - **Tailwind v4** is CSS-first via `@tailwindcss/vite` — there is no `tailwind.config.js`. Global styles live at `packages/ui/src/styles/globals.css`.
-- `web` build is `tsc -b && vite build`; `api` dev is `tsx watch src/index.ts` and listens on port **2131**.
+- `web` build is `tsc -b && vite build`; `api` dev is `tsx watch src/index.ts` and listens on port **3131**.
+- `api` loads env from `apps/api/.env` via `dotenv/config` (entry `src/index.ts`) and connects Mongoose to `MONGODB_URI` in `src/server.ts`. Use `apps/api/.env.example` as a template (committed; `.env` is gitignored).
 - Requires Node >= 20. TypeScript is `~6` (bleeding edge).
 - Turbo caches task outputs; `dev` is persistent and uncached.
