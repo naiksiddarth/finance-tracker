@@ -15,9 +15,11 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "bcrypt": "^6.0.0",
     "mongoose": "^9.0.0"
   },
   "devDependencies": {
+    "@types/bcrypt": "^6.0.0",
     "typescript": "~6"
   }
 }
