@@ -1,7 +1,19 @@
-import mongoose from "mongoose"
+import mongoose, { Model } from "mongoose"
 import bcrypt from "bcrypt"
 
-export const UserSchema = new mongoose.Schema({
+export interface IUser {
+  username: string
+  email: string
+  password: string
+}
+
+export interface IUserMethods {
+  comparePassword(password: string): Promise<boolean>
+}
+
+export type UserModel = Model<IUser, {}, IUserMethods>
+
+export const UserSchema = new mongoose.Schema<IUser, UserModel, IUserMethods>({
   username: {
     type: String,
     required: true,
@@ -23,6 +35,11 @@ UserSchema.pre("save", async function() {
   this.password = await bcrypt.hash(this.password, 10)
 })
 
-const User = mongoose.model("User", UserSchema)
+UserSchema.methods.comparePassword = async function(password: string): Promise<boolean> {
+  return bcrypt.compare(password, this.password)
+}
+
+const User = mongoose.model<IUser, UserModel>("User", UserSchema)
 
 export { User }
+

@@ -9,13 +9,39 @@ const registerHandler = asyncHandler(async (req, res) => {
     email,
     password,
   })
-  const createdUser = await User.findById(user._id).select("-password")
+  const userObject = user.toObject()
+  const { password: _password, ...userWithoutPassword } = userObject
+
   const response = new ApiResponse(
     201,
-    createdUser,
+    userWithoutPassword,
     "User registered successfully"
   )
   res.status(201).json(response)
 })
 
-export { registerHandler }
+const loginHandler = asyncHandler(async (req, res) => {
+  const { username, email, password } = req.body
+
+  const user = await User.findOne({ $or: [{ email }, { username }] })
+
+  if (!user) {
+    throw new ApiResponse(404, "", "User not found")
+  }
+  const matchPassword = await user.comparePassword(password)
+
+  if (!matchPassword) {
+    throw new ApiResponse(401, "", "Invalid password")
+  }
+  const userObject = user.toObject()
+  const { password: _password, ...userWithoutPassword } = userObject
+
+  const response = new ApiResponse(
+    200,
+    userWithoutPassword,
+    "User logged in successfully"
+  )
+  res.status(200).json(response)
+})
+
+export { registerHandler, loginHandler }
