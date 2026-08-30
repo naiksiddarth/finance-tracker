@@ -1,5 +1,6 @@
 import mongoose, { Model } from "mongoose"
 import bcrypt from "bcrypt"
+import { DBERRORS } from "@finance-tracker/shared/errorCodes"
 
 export interface IUser {
   username: string
@@ -17,12 +18,12 @@ export const UserSchema = new mongoose.Schema<IUser, UserModel, IUserMethods>({
   username: {
     type: String,
     required: true,
-    unique: true,
+    unique: [true, DBERRORS.DUPLICATE_USERNAME],
   },
   email: {
     type: String,
     required: true,
-    unique: true,
+    unique: [true, DBERRORS.DUPLICATE_EMAIL],
   },
   password: {
     type: String,

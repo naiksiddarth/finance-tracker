@@ -1,6 +1,8 @@
 import { User } from "@finance-tracker/db"
 import { asyncHandler } from "../utils/async-handler.ts"
 import { ApiResponse } from "../utils/api-response.ts"
+import { ApiError } from "../utils/api-errors.ts"
+import { DBERRORS } from "@finance-tracker/shared/errorCodes"
 
 const registerHandler = asyncHandler(async (req, res) => {
   const { username, email, password } = req.body
@@ -26,12 +28,12 @@ const loginHandler = asyncHandler(async (req, res) => {
   const user = await User.findOne({ $or: [{ email }, { username }] })
 
   if (!user) {
-    throw new ApiResponse(404, "", "User not found")
+    throw new ApiError(404, "", DBERRORS.NOT_FOUND)
   }
   const matchPassword = await user.comparePassword(password)
 
   if (!matchPassword) {
-    throw new ApiResponse(401, "", "Invalid password")
+    throw new ApiError(401, "", DBERRORS.INVALID_PASSWORD)
   }
   const userObject = user.toObject()
   const { password: _password, ...userWithoutPassword } = userObject
