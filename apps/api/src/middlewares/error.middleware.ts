@@ -1,6 +1,7 @@
 import type { Request, Response, NextFunction } from "express"
-import { DBERRORS } from "@finance-tracker/shared/errorCodes"
+import z from "zod"
 
+import { DBERRORS } from "@finance-tracker/shared/errorCodes"
 import { ApiResponse } from "../utils/api-response.ts"
 
 function handleError(
@@ -13,14 +14,16 @@ function handleError(
   let message = err.message || "Internal Server Error"
   let data = err.data || null
 
-  if(err.message.includes(DBERRORS.DUPLICATE_EMAIL)) {
+  if (err.message.includes(DBERRORS.DUPLICATE_EMAIL)) {
     message = DBERRORS.DUPLICATE_EMAIL
     statusCode = 409
-  }
-
-  if(err.message.includes(DBERRORS.DUPLICATE_USERNAME)) {
+  } else if (err.message.includes(DBERRORS.DUPLICATE_USERNAME)) {
     message = DBERRORS.DUPLICATE_USERNAME
     statusCode = 409
+  } else if (err instanceof z.ZodError) {
+    console.log(err.issues)
+    data = err.issues
+    statusCode = 400
   }
 
   res.status(statusCode).json(new ApiResponse(statusCode, data, message))

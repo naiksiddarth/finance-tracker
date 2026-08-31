@@ -25,7 +25,7 @@ const registerHandler = asyncHandler(async (req, res) => {
 const loginHandler = asyncHandler(async (req, res) => {
   const { username, email, password } = req.body
 
-  const user = await User.findOne({ $or: [{ email }, { username }] })
+  const user = await User.findOne(email ? { email } : { username })
 
   if (!user) {
     throw new ApiError(404, "", DBERRORS.NOT_FOUND)
