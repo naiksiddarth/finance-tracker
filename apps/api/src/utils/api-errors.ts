@@ -7,7 +7,7 @@ class ApiError extends Error {
     statusCode: number,
     data: any,
     message: string = "Success",
-    success: boolean = true
+    success: boolean = false
   ) {
     super(message)
     this.statusCode = statusCode
