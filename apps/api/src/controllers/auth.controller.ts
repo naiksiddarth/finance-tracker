@@ -10,7 +10,7 @@ const COOKIE_OPTIONS: CookieOptions = {
   secure: process.env.NODE_ENV === "production",
   sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax",
   maxAge: 7 * 24 * 60 * 60 * 1000,
-  path: "/api/auth/refresh"
+  path: "/api/auth/refresh",
 }
 
 const registerHandler = asyncHandler(async (req, res) => {
@@ -20,6 +20,7 @@ const registerHandler = asyncHandler(async (req, res) => {
     email,
     password,
   })
+  // we dont have a better place to store this for now
   const refreshToken = await user.generateRefreshToken()
   const accessToken = await user.generateAccessToken()
 
@@ -78,4 +79,22 @@ const loginHandler = asyncHandler(async (req, res) => {
     )
 })
 
-export { registerHandler, loginHandler }
+const refreshHandler = asyncHandler(async (req, res) => {
+  // get the refresh token from the cookie
+  const liveUser = await User.findById(req.user?._id)
+  const incomingRefreshToken = req.cookies?.refreshToken
+
+  if (!liveUser) {
+    throw new ApiError(404, DBERRORS.NOT_FOUND, "User not found")
+  }
+
+  if (incomingRefreshToken !== liveUser?.refreshToken) {
+    throw new ApiError(401, DBERRORS.UNAUTHORIZED, "Refresh token is expired ")
+  }
+
+  const accessToken = await liveUser?.generateAccessToken()
+
+  res.json(new ApiResponse(200, { accessToken }, "Access Token Refreshed"))
+})
+
+export { registerHandler, loginHandler, refreshHandler }
