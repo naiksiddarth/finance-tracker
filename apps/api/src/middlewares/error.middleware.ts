@@ -1,6 +1,6 @@
 import type { Request, Response, NextFunction } from "express"
 import z from "zod"
-
+import mongoose from "mongoose"
 import { DBERRORS } from "@finance-tracker/shared/constants/errorCodes"
 import { ApiResponse } from "../utils/api-response.ts"
 
@@ -14,12 +14,11 @@ function handleError(
   let message = err.message || "Internal Server Error"
   let data = err.data || null
 
-  if (err.message.includes(DBERRORS.DUPLICATE_EMAIL)) {
+  if (err.name === "MongoServerError") {
     message = DBERRORS.DUPLICATE_EMAIL
     statusCode = 409
-  } else if (err.message.includes(DBERRORS.DUPLICATE_USERNAME)) {
-    message = DBERRORS.DUPLICATE_USERNAME
-    statusCode = 409
+    data = { code: err.code, duplicate: err.keyValue }
+    // data = err
   } else if (err instanceof z.ZodError) {
     console.log(err.issues)
     data = err.issues
