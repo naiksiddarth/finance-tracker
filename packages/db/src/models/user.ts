@@ -8,13 +8,12 @@ export interface IUser {
   email: string
   password: string
   refreshToken: string
-  comparePassword(): Promise<boolean>
-  generateRefreshToken(): Promise<string>
-  generateAccessToken(): Promise<string>
 }
 
 export interface IUserMethods {
   comparePassword(password: string): Promise<boolean>
+  generateRefreshToken(): Promise<string>
+  generateAccessToken(): string
 }
 
 export type UserModel = Model<IUser, {}, IUserMethods>
@@ -52,7 +51,7 @@ UserSchema.methods.comparePassword = async function (
   return bcrypt.compare(password, this.password)
 }
 
-UserSchema.methods.generateAccessToken = async function (): Promise<string> {
+UserSchema.methods.generateAccessToken = function (): string {
   return jwt.sign(
     { _id: this._id, username: this.username, email: this.email },
     process.env.ACCESS_TOKEN_SECRET!,

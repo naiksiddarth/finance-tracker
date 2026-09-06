@@ -3,7 +3,7 @@ import { User } from "@finance-tracker/db"
 import { asyncHandler } from "../utils/async-handler.ts"
 import { ApiResponse } from "../utils/api-response.ts"
 import { ApiError } from "../utils/api-errors.ts"
-import { DBERRORS } from "@finance-tracker/shared/errorCodes"
+import { DBERRORS } from "@finance-tracker/shared/constants/errorCodes"
 
 const COOKIE_OPTIONS: CookieOptions = {
   httpOnly: true,
@@ -20,9 +20,10 @@ const registerHandler = asyncHandler(async (req, res) => {
     email,
     password,
   })
+
   // we dont have a better place to store this for now
   const refreshToken = await user.generateRefreshToken()
-  const accessToken = await user.generateAccessToken()
+  const accessToken = user.generateAccessToken()
 
   const userObject = user.toObject()
   const {
@@ -65,7 +66,7 @@ const loginHandler = asyncHandler(async (req, res) => {
   } = userObject // stripping password and refresh token
 
   const refreshToken = await user.generateRefreshToken()
-  const accessToken = await user.generateAccessToken()
+  const accessToken = user.generateAccessToken()
 
   res
     .status(200)

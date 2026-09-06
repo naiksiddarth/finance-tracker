@@ -3,7 +3,7 @@ import { Request, Response, NextFunction } from "express"
 
 import { asyncHandler } from "../utils/async-handler.ts"
 import { ApiError } from "../utils/api-errors.ts"
-import { DBERRORS } from "@finance-tracker/shared"
+import { DBERRORS } from "@finance-tracker/shared/constants/errorCodes"
 import type { AuthUserPayload } from "../types/express.d.ts"
 
 export const verifyAccessToken = asyncHandler(
@@ -33,10 +33,7 @@ export const verifyAccessToken = asyncHandler(
 
 export const verifyRefreshToken = asyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
-    const refreshToken =
-      req.body?.refreshToken ||
-      req.headers.authorization?.split(" ")[1] ||
-      req.cookies?.refreshToken
+    const refreshToken = req.cookies?.refreshToken
 
     if (!refreshToken) {
       throw new ApiError(401, DBERRORS.UNAUTHORIZED, "No Refresh Token Found")

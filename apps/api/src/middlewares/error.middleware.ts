@@ -1,7 +1,7 @@
 import type { Request, Response, NextFunction } from "express"
 import z from "zod"
 
-import { DBERRORS } from "@finance-tracker/shared/errorCodes"
+import { DBERRORS } from "@finance-tracker/shared/constants/errorCodes"
 import { ApiResponse } from "../utils/api-response.ts"
 
 function handleError(
