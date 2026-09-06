@@ -1,1 +1,0 @@
-export { DBERRORS } from "./errorCodes/errorcode.js"
