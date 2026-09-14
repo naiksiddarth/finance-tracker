@@ -6,7 +6,7 @@ import {
   refreshHandler,
 } from "../controllers/auth.controller.ts"
 
-import { registerSchema, loginSchema } from "@finance-tracker/validation"
+import { registerSchema, loginSchema } from "@finance-tracker/validation/auth"
 import { validate } from "../validators/validator.ts"
 import { verifyRefreshToken } from "../middlewares/verifyJwt.middleware.ts"
 

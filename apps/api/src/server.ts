@@ -3,13 +3,14 @@ import cors from "cors"
 import cookieParser from "cookie-parser"
 
 import { authRouter } from "./routes/auth.route.ts"
+import { transactionRouter } from "./routes/transaction.route.ts"
 import { handleError } from "./middlewares/error.middleware.ts"
 
 const app = express()
 
 app.use(
   cors({
-    origin: "*",
+    origin: process.env.CORS_ORIGIN,
     credentials: true,
   })
 )
@@ -19,6 +20,7 @@ app.use(express.static("public"))
 app.use(cookieParser())
 
 app.use("/api/auth", authRouter)
+app.use("/api/transaction", transactionRouter)
 
 app.use(handleError)
 
