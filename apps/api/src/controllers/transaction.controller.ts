@@ -1,7 +1,7 @@
 import { asyncHandler } from "../utils/async-handler.ts"
 import { ApiResponse } from "../utils/api-response.ts"
 
-import { Transaction } from "@finance-tracker/db/models/transaction"
+import { Transaction } from "@finance-tracker/db/transaction"
 import type { CreateTransaction } from "@finance-tracker/validation/transaction"
 
 const createTransaction = asyncHandler(async (req, res) => {

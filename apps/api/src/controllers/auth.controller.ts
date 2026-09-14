@@ -1,5 +1,5 @@
 import type { CookieOptions } from "express"
-import { User } from "@finance-tracker/db"
+import { User } from "@finance-tracker/db/user"
 import { asyncHandler } from "../utils/async-handler.ts"
 import { ApiResponse } from "../utils/api-response.ts"
 import { ApiError } from "../utils/api-errors.ts"
