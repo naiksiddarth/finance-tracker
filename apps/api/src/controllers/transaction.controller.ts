@@ -1,6 +1,5 @@
 import { asyncHandler } from "../utils/async-handler.ts"
 import { ApiResponse } from "../utils/api-response.ts"
-import { ApiError } from "../utils/api-errors.ts"
 
 import { Transaction } from "@finance-tracker/db/models/transaction"
 import type { CreateTransaction } from "@finance-tracker/validation/transaction"

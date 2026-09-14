@@ -1,6 +1,6 @@
 import { Router } from "express"
 
-import { createTransaction } from "../controllers/tansaction.controller.ts"
+import { createTransaction } from "../controllers/transaction.controller.ts"
 import { verifyAccessToken } from "../middlewares/verifyJwt.middleware.ts"
 import { validate } from "../validators/validator.ts"
 
