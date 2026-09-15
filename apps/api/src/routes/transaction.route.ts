@@ -1,6 +1,10 @@
 import { Router } from "express"
 
-import { createTransaction } from "../controllers/transaction.controller.ts"
+import {
+  createTransaction,
+  getTransactions,
+} from "../controllers/transaction.controller.ts"
+
 import { verifyAccessToken } from "../middlewares/verifyJwt.middleware.ts"
 import { validate } from "../validators/validator.ts"
 
@@ -10,9 +14,11 @@ const transactionRouter = Router()
 
 transactionRouter.post(
   "/",
-  validate(CreateTransactionSchema),
   verifyAccessToken,
+  validate(CreateTransactionSchema),
   createTransaction
 )
+
+transactionRouter.get("/", verifyAccessToken, getTransactions)
 
 export { transactionRouter }
