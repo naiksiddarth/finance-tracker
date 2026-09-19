@@ -1,6 +1,12 @@
 import React from "react"
 import { cn } from "@workspace/ui/lib/utils"
 import { Badge } from "@workspace/ui/components/badge"
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@workspace/ui/components/card"
 
 interface MetricCardProps {
   title: string
@@ -26,19 +32,19 @@ export function MetricCard({
   className,
 }: MetricCardProps) {
   return (
-    <div
+    <Card
       className={cn(
-        "flex flex-col justify-between rounded-lg border border-border bg-card p-5 shadow-sm",
+        "gap-0 rounded-lg border border-border bg-card p-5 shadow-sm",
         className
       )}
     >
-      <div className="flex items-center justify-between text-muted-foreground">
-        <span className="label-md font-medium text-muted-foreground">
+      <CardHeader className="flex items-center justify-between gap-0 rounded-none p-0">
+        <CardTitle className="label-md font-medium text-muted-foreground">
           {title}
-        </span>
+        </CardTitle>
         {icon && <div className={cn(iconContainerClass)}>{icon}</div>}
-      </div>
-      <div className="mt-3">
+      </CardHeader>
+      <CardContent className="mt-3 p-0">
         <div
           className={cn(
             "numeric-lg tracking-tight",
@@ -54,8 +60,8 @@ export function MetricCard({
                 variant="default"
                 className={
                   trend === "down"
-                    ? "bg-transparent text-destructive p-0"
-                    : "bg-transparent text-success p-0"
+                    ? "bg-transparent p-0 text-destructive"
+                    : "bg-transparent p-0 text-success"
                 }
               >
                 {trendValue}
@@ -66,7 +72,7 @@ export function MetricCard({
             )}
           </div>
         )}
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   )
 }

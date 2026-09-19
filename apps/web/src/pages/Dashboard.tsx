@@ -6,6 +6,8 @@ import {
   Download,
 } from "lucide-react"
 import { Button } from "@workspace/ui/components/button"
+import { ButtonGroup } from "@workspace/ui/components/button-group"
+import { Card, CardContent } from "@workspace/ui/components/card"
 import { MetricCard } from "../components/finance/MetricCard"
 import { IncomeExpenseChart } from "../components/dashboard/IncomeExpenseChart"
 import { RecentTransactions } from "../components/dashboard/RecentTransactions"
@@ -38,7 +40,7 @@ export function Dashboard() {
           </p>
         </div>
         {/* Date Range Filter Pill Group */}
-        <div className="inline-flex items-center self-start rounded-lg border border-border bg-card p-0.5 md:self-auto">
+        <ButtonGroup className="inline-flex items-center gap-1 self-start rounded-lg border border-border bg-card p-0.5 *:data-[slot=button]:rounded-md! md:self-auto">
           <Button
             variant="default"
             size="sm"
@@ -60,7 +62,7 @@ export function Dashboard() {
           >
             Year to Date
           </Button>
-        </div>
+        </ButtonGroup>
       </div>
 
       {/* TOP METRIC CARDS */}
@@ -111,28 +113,30 @@ export function Dashboard() {
           <BudgetSnapshot snapshot={MOCK_BUDGET_SNAPSHOT} />
 
           {/* QUICK SHORTCUT */}
-          <div className="flex items-center justify-between rounded-lg border border-border bg-muted p-5 shadow-sm">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg border border-border bg-card text-primary">
-                <Download className="h-5 w-5" />
-              </div>
-              <div>
-                <div className="label-md font-semibold text-foreground">
-                  Export Tax & Ledger Report
+          <Card className="gap-0 rounded-lg border border-border bg-muted p-5 shadow-sm ring-0">
+            <CardContent className="flex items-center justify-between gap-3 p-0">
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg border border-border bg-card text-primary">
+                  <Download className="h-5 w-5" />
                 </div>
-                <div className="body-sm text-muted-foreground">
-                  Download verified CSV / PDF statements
+                <div>
+                  <div className="label-md font-semibold text-foreground">
+                    Export Tax & Ledger Report
+                  </div>
+                  <div className="body-sm text-muted-foreground">
+                    Download verified CSV / PDF statements
+                  </div>
                 </div>
               </div>
-            </div>
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-8 rounded-lg border-border bg-card px-3 label-md font-medium text-foreground transition-colors hover:bg-secondary"
-            >
-              Export
-            </Button>
-          </div>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-8 rounded-lg border-border bg-card px-3 label-md font-medium text-foreground transition-colors hover:bg-secondary"
+              >
+                Export
+              </Button>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </div>
