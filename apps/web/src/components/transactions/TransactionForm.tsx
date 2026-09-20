@@ -259,7 +259,7 @@ export function TransactionForm({ mode, onClose }: TransactionFormProps) {
               ? "Weekly organic grocery run; includes items for team dinner gathering. Tag: #FamilyExpense"
               : ""
           }
-          className="min-h-[80px] resize-none"
+          className="min-h-20 resize-none"
         />
       </div>
 
