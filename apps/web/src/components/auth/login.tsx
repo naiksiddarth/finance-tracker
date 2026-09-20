@@ -1,6 +1,8 @@
 import { useState, useContext } from "react"
 import { useNavigate } from "react-router-dom"
 import { cn } from "@workspace/ui/lib/utils"
+import { ERROR_CODES } from "@finance-tracker/shared/constants/errorCodes"
+import { ApiError } from "@/api/api-error"
 
 import { Button } from "@workspace/ui/components/button"
 import {
@@ -26,29 +28,40 @@ export function LoginForm({
 }: React.ComponentProps<"div">) {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
-  const [error, setError] = useState("")
+  const [error, setError] = useState<ApiError | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const navigate = useNavigate()
-  
+
   const auth = useContext(AuthContext)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+
     if (!auth) return
-    setError("") 
+
+    setError(null)
     setIsSubmitting(true)
     try {
       await auth.login(email, password)
       navigate("/")
-    } catch (err: any) {
-      setError(err.message || "Invalid email or password")
+    } catch (err: unknown) {
+      if (err instanceof ApiError) {
+        setError(err)
+      } else {
+        setError(
+          new ApiError(500, ERROR_CODES.UNKNOWN_ERROR, "Unable to log in")
+        )
+      }
     } finally {
       setIsSubmitting(false)
     }
   }
 
   return (
-    <div className={cn("flex flex-col gap-6 w-full max-w-sm", className)} {...props}>
+    <div
+      className={cn("flex w-full max-w-sm flex-col gap-6", className)}
+      {...props}
+    >
       <Card>
         <CardHeader>
           <CardTitle>Login to your account</CardTitle>
@@ -59,7 +72,6 @@ export function LoginForm({
         <CardContent>
           <form onSubmit={handleSubmit}>
             <FieldGroup>
-              {error && <FieldError>{error}</FieldError>}
               <Field>
                 <FieldLabel htmlFor="email">Email</FieldLabel>
                 <Input
@@ -68,8 +80,17 @@ export function LoginForm({
                   placeholder="m@example.com"
                   required
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e) => {
+                    setEmail(e.target.value)
+                    if (error?.code === ERROR_CODES.NOT_FOUND) {
+                      setError(null)
+                    }
+                  }}
+                  aria-invalid={error?.code === ERROR_CODES.NOT_FOUND}
                 />
+                {error?.code === ERROR_CODES.NOT_FOUND && (
+                  <FieldError>Email does not exist</FieldError>
+                )}
               </Field>
               <Field>
                 <div className="flex items-center">
@@ -81,13 +102,28 @@ export function LoginForm({
                     Forgot your password?
                   </a>
                 </div>
-                <Input 
-                  id="password" 
-                  type="password" 
-                  required 
+                <Input
+                  id="password"
+                  type="password"
+                  required
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e) => {
+                    setPassword(e.target.value)
+                    if (error?.code === ERROR_CODES.INVALID_PASSWORD) {
+                      setError(null)
+                    }
+                  }}
+                  aria-invalid={error?.code === ERROR_CODES.INVALID_PASSWORD}
                 />
+
+                {error?.code === ERROR_CODES.INVALID_PASSWORD && (
+                  <FieldError>Invalid password</FieldError>
+                )}
+                {error &&
+                  error.code !== ERROR_CODES.NOT_FOUND &&
+                  error.code !== ERROR_CODES.INVALID_PASSWORD && (
+                    <FieldError>{error.message}</FieldError>
+                  )}
               </Field>
               <Field>
                 <Button type="submit" disabled={isSubmitting}>
