@@ -1,4 +1,12 @@
 import { API_BASE_URL } from "@/api/config"
+import { ApiError } from "@/api/api-error"
+import {
+  ERROR_CODES,
+  type ErrorCode,
+} from "@finance-tracker/shared/constants/errorCodes"
+
+export { ApiError as AppError }
+
 interface User {
   _id: string
   username: string
@@ -33,7 +41,12 @@ export async function refreshAccessToken(): Promise<{
   })
     .then(async (response) => {
       if (!response.ok) {
-        throw new Error("Failed to refresh access token")
+        throw new ApiError(
+          response.status,
+          ERROR_CODES.UNAUTHORIZED,
+          "Failed to refresh access token",
+          null
+        )
       }
 
       const data = await response.json()
@@ -61,7 +74,7 @@ export async function apiRequest<T>(
     if (accessToken) {
       headers.set("Authorization", `Bearer ${accessToken}`)
     }
-    console.log(`${API_BASE_URL}${path}`)
+
     return fetch(`${API_BASE_URL}${path}`, {
       ...options,
       headers,
@@ -78,12 +91,28 @@ export async function apiRequest<T>(
       response = await makeRequest()
     } catch {
       setAccessToken(null)
-      throw new Error("Authentication required")
+      throw new ApiError(
+        401,
+        ERROR_CODES.UNAUTHORIZED,
+        "Authentication required",
+        null
+      )
     }
   }
 
   if (!response.ok) {
-    throw new Error(`API request failed: ${response.status}`)
+    const errorData = (await response.json().catch(() => null)) as {
+      code?: ErrorCode
+      message?: string
+      data?: unknown
+    } | null
+
+    throw new ApiError(
+      response.status,
+      errorData?.code ?? ERROR_CODES.UNKNOWN_ERROR,
+      errorData?.message ?? `HTTP error ${response.status}`,
+      errorData?.data ?? null
+    )
   }
 
   return response.json()
