@@ -2,8 +2,8 @@ import type { CookieOptions } from "express"
 import { User } from "@finance-tracker/db/user"
 import { asyncHandler } from "../utils/async-handler.ts"
 import { ApiResponse } from "../utils/api-response.ts"
-import { ApiError } from "../utils/api-errors.ts"
-import { DBERRORS } from "@finance-tracker/shared/constants/errorCodes"
+import { AppError } from "../utils/api-errors.ts"
+import { ERROR_CODES } from "@finance-tracker/shared/constants/errorCodes"
 
 const COOKIE_OPTIONS: CookieOptions = {
   httpOnly: true,
@@ -50,12 +50,12 @@ const loginHandler = asyncHandler(async (req, res) => {
   const user = await User.findOne(email ? { email } : { username })
 
   if (!user) {
-    throw new ApiError(404, "", DBERRORS.NOT_FOUND)
+    throw new AppError(404, ERROR_CODES.NOT_FOUND, "")
   }
   const matchPassword = await user.comparePassword(password)
 
   if (!matchPassword) {
-    throw new ApiError(401, "", DBERRORS.INVALID_PASSWORD)
+    throw new AppError(401, ERROR_CODES.INVALID_PASSWORD, "")
   }
 
   const userObject = user.toObject()
@@ -86,11 +86,15 @@ const refreshHandler = asyncHandler(async (req, res) => {
   const incomingRefreshToken = req.cookies?.refreshToken
 
   if (!liveUser) {
-    throw new ApiError(404, DBERRORS.NOT_FOUND, "User not found")
+    throw new AppError(404, ERROR_CODES.NOT_FOUND, "User not found")
   }
 
   if (incomingRefreshToken !== liveUser?.refreshToken) {
-    throw new ApiError(401, DBERRORS.UNAUTHORIZED, "Refresh token is expired ")
+    throw new AppError(
+      401,
+      ERROR_CODES.UNAUTHORIZED,
+      "Refresh token is expired "
+    )
   }
 
   const accessToken = liveUser?.generateAccessToken()

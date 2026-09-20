@@ -1,20 +1,16 @@
-class ApiError extends Error {
-  statusCode: number
-  data: any
-  message: string
-  success: boolean
+import type { ErrorCode } from "@finance-tracker/shared/constants/errorCodes"
+
+class AppError extends Error {
   constructor(
-    statusCode: number,
-    data: any,
-    message: string = "Success",
-    success: boolean = false
+    public statusCode: number,
+    public code: ErrorCode,
+    public message: string,
+    public data: unknown = null
   ) {
     super(message)
-    this.statusCode = statusCode
-    this.data = data
-    this.message = message
-    this.success = success
+
+    this.name = "ApiError"
   }
 }
 
-export { ApiError }
+export { AppError }

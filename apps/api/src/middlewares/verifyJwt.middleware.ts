@@ -2,8 +2,8 @@ import jwt from "jsonwebtoken"
 import { Request, Response, NextFunction } from "express"
 
 import { asyncHandler } from "../utils/async-handler.ts"
-import { ApiError } from "../utils/api-errors.ts"
-import { DBERRORS } from "@finance-tracker/shared/constants/errorCodes"
+import { AppError } from "../utils/api-errors.ts"
+import { ERROR_CODES } from "@finance-tracker/shared/constants/errorCodes"
 import type { AuthUserPayload } from "../types/express.d.ts"
 
 export const verifyAccessToken = asyncHandler(
@@ -14,7 +14,7 @@ export const verifyAccessToken = asyncHandler(
       req.cookies?.accessToken
 
     if (!accessToken) {
-      throw new ApiError(401, DBERRORS.UNAUTHORIZED, "No Access Token Found")
+      throw new AppError(401, ERROR_CODES.UNAUTHORIZED, "No Access Token Found")
     }
 
     const decodeToken = jwt.verify(
@@ -23,7 +23,7 @@ export const verifyAccessToken = asyncHandler(
     )
 
     if (typeof decodeToken === "string") {
-      throw new ApiError(401, DBERRORS.UNAUTHORIZED, "Invalid token payload")
+      throw new AppError(401, ERROR_CODES.UNAUTHORIZED, "Invalid token payload")
     }
 
     req.user = decodeToken as AuthUserPayload
@@ -36,7 +36,11 @@ export const verifyRefreshToken = asyncHandler(
     const refreshToken = req.cookies?.refreshToken
 
     if (!refreshToken) {
-      throw new ApiError(401, DBERRORS.UNAUTHORIZED, "No Refresh Token Found")
+      throw new AppError(
+        401,
+        ERROR_CODES.UNAUTHORIZED,
+        "No Refresh Token Found"
+      )
     }
 
     const decodeToken = jwt.verify(
@@ -45,7 +49,7 @@ export const verifyRefreshToken = asyncHandler(
     )
 
     if (typeof decodeToken === "string") {
-      throw new ApiError(401, DBERRORS.UNAUTHORIZED, "Invalid token payload")
+      throw new AppError(401, ERROR_CODES.UNAUTHORIZED, "Invalid token payload")
     }
 
     req.user = decodeToken as AuthUserPayload
