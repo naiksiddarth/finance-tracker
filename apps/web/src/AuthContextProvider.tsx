@@ -1,6 +1,11 @@
 import { createContext, useEffect, useState, type ReactNode } from "react"
 
-import { apiRequest, setAccessToken, refreshAccessToken } from "@/api/client"
+import {
+  apiRequest,
+  setAccessToken,
+  refreshAccessToken,
+  AppError,
+} from "@/api/client"
 
 interface User {
   _id: string
@@ -25,8 +30,9 @@ export const AuthContext = createContext<AuthContextValues | null>(null)
 
 export function AuthContextProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
-  
+  const [isInitialized, setIsInitialized] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
+
   async function checkAuth() {
     try {
       const data = await refreshAccessToken()
@@ -35,7 +41,7 @@ export function AuthContextProvider({ children }: { children: ReactNode }) {
       setAccessToken(null)
       setUser(null)
     } finally {
-      setIsLoading(false)
+      setIsInitialized(true)
     }
   }
 
@@ -46,28 +52,40 @@ export function AuthContextProvider({ children }: { children: ReactNode }) {
   async function login(email: string, password: string) {
     setIsLoading(true)
 
-    const res: LoginResponse = await apiRequest("/auth/login", {
-      method: "POST",
-      body: JSON.stringify({
-        email,
-        password,
-      }),
-    })
-    setUser(res.user)
-    setAccessToken(res.accessToken)
-    setIsLoading(false)
+    try {
+      const res: LoginResponse = await apiRequest("/auth/login", {
+        method: "POST",
+        body: JSON.stringify({
+          email,
+          password,
+        }),
+      })
+      setUser(res.user)
+      setAccessToken(res.accessToken)
+    } catch (err: any) {
+      if (err instanceof AppError) {
+        throw err
+      }
+
+      setAccessToken(null)
+      setUser(null)
+    } finally {
+      setIsLoading(false)
+    }
   }
 
-  // for later
+  //update later for loggout user
   async function logout() {
     setUser(null)
+    setAccessToken(null)
+    setIsLoading(false)
   }
 
   return (
     <AuthContext.Provider
       value={{ user, isAuthenticated: user !== null, isLoading, login, logout }}
     >
-      {!isLoading && children}
+      {isInitialized && children}
     </AuthContext.Provider>
   )
 }
