@@ -1,7 +1,10 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom"
 import { AppLayout } from "@/components/layout/AppLayout"
+import { ProtectedRoute } from "@/components/layout/ProtectedRoute"
 import { Dashboard } from "@/pages/Dashboard"
 import { Placeholder } from "@/pages/Placeholder"
+import { Login } from "@/pages/Login"
+import { Register } from "@/pages/Register"
 import { AuthContextProvider } from "@/AuthContextProvider"
 
 export function App() {
@@ -9,7 +12,15 @@ export function App() {
     <AuthContextProvider>
       <BrowserRouter>
         <Routes>
-          <Route element={<AppLayout />}>
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route 
+            element={
+              <ProtectedRoute>
+                <AppLayout />
+              </ProtectedRoute>
+            }
+          >
             <Route path="/" element={<Dashboard />} />
             <Route
               path="/transactions"

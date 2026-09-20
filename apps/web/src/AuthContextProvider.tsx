@@ -26,6 +26,7 @@ export const AuthContext = createContext<AuthContextValues | null>(null)
 export function AuthContextProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  
   async function checkAuth() {
     try {
       const data = await refreshAccessToken()

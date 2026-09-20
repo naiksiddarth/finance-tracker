@@ -1,4 +1,4 @@
-import { useState, useContext } from "react"
+import { useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { cn } from "@workspace/ui/lib/utils"
 
@@ -18,48 +18,70 @@ import {
   FieldError,
 } from "@workspace/ui/components/field"
 import { Input } from "@workspace/ui/components/input"
-import { AuthContext } from "../../AuthContextProvider"
+import { apiRequest } from "@/api/client"
 
-export function LoginForm({
+export function RegisterForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
+  const [username, setUsername] = useState("")
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [error, setError] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [confirmPassword, setConfirmPassword] = useState("")
   const navigate = useNavigate()
-  
-  const auth = useContext(AuthContext)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!auth) return
-    setError("") 
+    setError("")
     setIsSubmitting(true)
+    if (password !== confirmPassword) {
+      setError("Passwords do not match")
+      setIsSubmitting(false)
+      return
+    }
     try {
-      await auth.login(email, password)
-      navigate("/")
+      await apiRequest("/auth/register", {
+        method: "POST",
+        body: JSON.stringify({ username, email, password, confirmPassword }),
+      })
+      // On success, redirect to login so they can log in
+      navigate("/login")
     } catch (err: any) {
-      setError(err.message || "Invalid email or password")
+      setError(err.message || "Registration failed")
     } finally {
       setIsSubmitting(false)
     }
   }
 
   return (
-    <div className={cn("flex flex-col gap-6 w-full max-w-sm", className)} {...props}>
+    <div
+      className={cn("flex w-full max-w-sm flex-col gap-6", className)}
+      {...props}
+    >
       <Card>
         <CardHeader>
-          <CardTitle>Login to your account</CardTitle>
+          <CardTitle>Create an account</CardTitle>
           <CardDescription>
-            Enter your email below to login to your account
+            Enter your details below to create your account
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit}>
             <FieldGroup>
               {error && <FieldError>{error}</FieldError>}
+              <Field>
+                <FieldLabel htmlFor="username">Username</FieldLabel>
+                <Input
+                  id="username"
+                  type="text"
+                  placeholder="johndoe"
+                  required
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                />
+              </Field>
               <Field>
                 <FieldLabel htmlFor="email">Email</FieldLabel>
                 <Input
@@ -72,29 +94,33 @@ export function LoginForm({
                 />
               </Field>
               <Field>
-                <div className="flex items-center">
-                  <FieldLabel htmlFor="password">Password</FieldLabel>
-                  <a
-                    href="#"
-                    className="ml-auto inline-block text-sm underline-offset-4 hover:underline"
-                  >
-                    Forgot your password?
-                  </a>
-                </div>
-                <Input 
-                  id="password" 
-                  type="password" 
-                  required 
+                <FieldLabel htmlFor="password">Password</FieldLabel>
+                <Input
+                  id="password"
+                  type="password"
+                  required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                 />
               </Field>
               <Field>
+                <FieldLabel htmlFor="confirmPassword">
+                  Confirm Password
+                </FieldLabel>
+                <Input
+                  id="confirmPassword"
+                  type="password"
+                  required
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                />
+              </Field>
+              <Field>
                 <Button type="submit" disabled={isSubmitting}>
-                  {isSubmitting ? "Logging in..." : "Login"}
+                  {isSubmitting ? "Creating account..." : "Sign Up"}
                 </Button>
                 <FieldDescription className="text-center">
-                  Don&apos;t have an account? <a href="/register">Sign up</a>
+                  Already have an account? <a href="/login">Login</a>
                 </FieldDescription>
               </Field>
             </FieldGroup>
