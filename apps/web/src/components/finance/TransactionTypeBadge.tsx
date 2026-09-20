@@ -7,7 +7,7 @@ interface TransactionTypeBadgeProps {
 
 export function TransactionTypeBadge({ category }: TransactionTypeBadgeProps) {
   // Map standard categories to visual styles based on design
-  let badgeStyles = ""
+  let badgeStyles;
   
   const categoryLower = category.toLowerCase()
   if (categoryLower === "salary" || categoryLower === "consulting") {

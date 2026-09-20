@@ -93,9 +93,19 @@ const refreshHandler = asyncHandler(async (req, res) => {
     throw new ApiError(401, DBERRORS.UNAUTHORIZED, "Refresh token is expired ")
   }
 
-  const accessToken = await liveUser?.generateAccessToken()
-
-  res.json(new ApiResponse(200, { accessToken }, "Access Token Refreshed"))
+  const accessToken = liveUser?.generateAccessToken()
+  const {
+    refreshToken: _refreshToken,
+    password: _password,
+    ...userWithoutPassword
+  } = liveUser
+  res.json(
+    new ApiResponse(
+      200,
+      { accessToken, user: userWithoutPassword },
+      "Access Token Refreshed"
+    )
+  )
 })
 
 export { registerHandler, loginHandler, refreshHandler }

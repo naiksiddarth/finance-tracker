@@ -1,3 +1,4 @@
+import * as React from "react"
 import { Link, useLocation } from "react-router-dom"
 import {
   Wallet,
@@ -10,11 +11,13 @@ import {
 import { cn } from "@workspace/ui/lib/utils"
 import { Button } from "@workspace/ui/components/button"
 import { Avatar, AvatarFallback } from "@workspace/ui/components/avatar"
+import { TransactionModal } from "../transactions/TransactionModal"
 
 type NavLinkProps = Array<{ path: string; name: string }>
 
 export function Header({ navLinks }: { navLinks: NavLinkProps }) {
   const location = useLocation()
+  const [isAddModalOpen, setIsAddModalOpen] = React.useState(false)
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-border bg-card shadow-sm">
@@ -89,6 +92,7 @@ export function Header({ navLinks }: { navLinks: NavLinkProps }) {
           {/* Primary Action Button */}
           <Button
             size="sm"
+            onClick={() => setIsAddModalOpen(true)}
             className="flex h-8 items-center gap-1.5 rounded-lg bg-primary px-3.5 label-md font-medium text-primary-foreground shadow-sm transition-colors hover:opacity-90"
           >
             <Plus className="h-4 w-4" />
@@ -103,6 +107,7 @@ export function Header({ navLinks }: { navLinks: NavLinkProps }) {
           </Avatar>
         </div>
       </div>
+      <TransactionModal isOpen={isAddModalOpen} onClose={() => setIsAddModalOpen(false)} mode="add" />
     </header>
   )
 }

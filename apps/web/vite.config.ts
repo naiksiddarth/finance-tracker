@@ -7,7 +7,7 @@ import { defineConfig } from "vite"
 export default defineConfig({
   plugins: [react(), tailwindcss()],
   server: {
-    port: 3132,
+    port: 5173,
   },
   resolve: {
     alias: {
