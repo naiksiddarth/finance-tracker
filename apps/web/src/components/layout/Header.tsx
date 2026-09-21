@@ -107,7 +107,11 @@ export function Header({ navLinks }: { navLinks: NavLinkProps }) {
           </Avatar>
         </div>
       </div>
-      <TransactionModal isOpen={isAddModalOpen} onClose={() => setIsAddModalOpen(false)} mode="add" />
+      <TransactionModal
+        isOpen={isAddModalOpen}
+        onClose={() => setIsAddModalOpen(false)}
+        mode="add"
+      />
     </header>
   )
 }

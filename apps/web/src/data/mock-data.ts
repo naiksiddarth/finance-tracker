@@ -115,10 +115,20 @@ export const MOCK_METRICS: Metric[] = [
 
 export const MOCK_CATEGORY_SPENDING: CategorySpending[] = [
   { name: "Housing", amount: 1450.0, percentage: 38, colorClass: "bg-primary" },
-  { name: "Groceries", amount: 620.0, percentage: 16, colorClass: "bg-secondary" },
+  {
+    name: "Groceries",
+    amount: 620.0,
+    percentage: 16,
+    colorClass: "bg-secondary",
+  },
   { name: "Dining Out", amount: 340.0, percentage: 9, colorClass: "bg-error" },
   { name: "Transport", amount: 215.0, percentage: 6, colorClass: "bg-outline" },
-  { name: "Entertainment", amount: 180.0, percentage: 5, colorClass: "bg-outline-variant" },
+  {
+    name: "Entertainment",
+    amount: 180.0,
+    percentage: 5,
+    colorClass: "bg-outline-variant",
+  },
 ]
 
 export const MOCK_BUDGET_SNAPSHOT: BudgetSnapshot = {
@@ -139,8 +149,32 @@ export const MOCK_BUDGET_SNAPSHOT: BudgetSnapshot = {
 }
 
 export const MOCK_CASH_FLOW = [
-  { label: "Week 1 (Oct 1-7)", incomeHeight: "85%", expenseHeight: "42%", incomeTitle: "Week 1 Income: $3,710", expenseTitle: "Week 1 Expenses: $1,420" },
-  { label: "Week 2 (Oct 8-14)", incomeHeight: "20%", expenseHeight: "60%", incomeTitle: "Week 2 Income: $450", expenseTitle: "Week 2 Expenses: $980" },
-  { label: "Week 3 (Oct 15-21)", incomeHeight: "75%", expenseHeight: "38%", incomeTitle: "Week 3 Income: $3,260", expenseTitle: "Week 3 Expenses: $810" },
-  { label: "Week 4 (Oct 22-28)", incomeHeight: "15%", expenseHeight: "32%", incomeTitle: "Week 4 Income: $0", expenseTitle: "Week 4 Expenses: $635" },
+  {
+    label: "Week 1 (Oct 1-7)",
+    incomeHeight: "85%",
+    expenseHeight: "42%",
+    incomeTitle: "Week 1 Income: $3,710",
+    expenseTitle: "Week 1 Expenses: $1,420",
+  },
+  {
+    label: "Week 2 (Oct 8-14)",
+    incomeHeight: "20%",
+    expenseHeight: "60%",
+    incomeTitle: "Week 2 Income: $450",
+    expenseTitle: "Week 2 Expenses: $980",
+  },
+  {
+    label: "Week 3 (Oct 15-21)",
+    incomeHeight: "75%",
+    expenseHeight: "38%",
+    incomeTitle: "Week 3 Income: $3,260",
+    expenseTitle: "Week 3 Expenses: $810",
+  },
+  {
+    label: "Week 4 (Oct 22-28)",
+    incomeHeight: "15%",
+    expenseHeight: "32%",
+    incomeTitle: "Week 4 Income: $0",
+    expenseTitle: "Week 4 Expenses: $635",
+  },
 ]

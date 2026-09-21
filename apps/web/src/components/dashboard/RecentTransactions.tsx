@@ -8,15 +8,22 @@ interface RecentTransactionsProps {
 
 export function RecentTransactions({ transactions }: RecentTransactionsProps) {
   return (
-    <div className="rounded-lg border border-border bg-card shadow-sm overflow-hidden">
-      <div className="p-6 pb-4 flex items-center justify-between">
+    <div className="overflow-hidden rounded-lg border border-border bg-card shadow-sm">
+      <div className="flex items-center justify-between p-6 pb-4">
         <div>
-          <h2 className="headline-sm text-foreground font-semibold">Recent Transactions</h2>
-          <p className="body-sm text-muted-foreground">Latest postings and cleared debits</p>
+          <h2 className="headline-sm font-semibold text-foreground">
+            Recent Transactions
+          </h2>
+          <p className="body-sm text-muted-foreground">
+            Latest postings and cleared debits
+          </p>
         </div>
-        <a className="label-md text-primary font-medium hover:underline inline-flex items-center gap-1" href="#">
+        <a
+          className="inline-flex items-center gap-1 label-md font-medium text-primary hover:underline"
+          href="#"
+        >
           <span>View all transactions</span>
-          <ArrowRight className="w-3.5 h-3.5" />
+          <ArrowRight className="h-3.5 w-3.5" />
         </a>
       </div>
       <TransactionTable transactions={transactions} />

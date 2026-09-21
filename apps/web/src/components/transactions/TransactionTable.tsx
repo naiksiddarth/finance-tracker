@@ -17,11 +17,19 @@ export function TransactionTable({ transactions }: TransactionTableProps) {
     <div className="overflow-x-auto">
       <Table className="w-full text-left">
         <TableHeader>
-          <TableRow className="bg-muted border-y border-border hover:bg-muted">
-            <TableHead className="h-9 px-4 label-sm text-muted-foreground font-medium uppercase tracking-wider">Date</TableHead>
-            <TableHead className="h-9 px-4 label-sm text-muted-foreground font-medium uppercase tracking-wider">Description</TableHead>
-            <TableHead className="h-9 px-4 label-sm text-muted-foreground font-medium uppercase tracking-wider">Category</TableHead>
-            <TableHead className="h-9 px-4 label-sm text-muted-foreground font-medium uppercase tracking-wider text-right">Amount</TableHead>
+          <TableRow className="border-y border-border bg-muted hover:bg-muted">
+            <TableHead className="h-9 px-4 label-sm font-medium tracking-wider text-muted-foreground uppercase">
+              Date
+            </TableHead>
+            <TableHead className="h-9 px-4 label-sm font-medium tracking-wider text-muted-foreground uppercase">
+              Description
+            </TableHead>
+            <TableHead className="h-9 px-4 label-sm font-medium tracking-wider text-muted-foreground uppercase">
+              Category
+            </TableHead>
+            <TableHead className="h-9 px-4 text-right label-sm font-medium tracking-wider text-muted-foreground uppercase">
+              Amount
+            </TableHead>
           </TableRow>
         </TableHeader>
         <TableBody className="body-md">

@@ -8,17 +8,23 @@ interface SpendingByCategoryProps {
 export function SpendingByCategory({ categories }: SpendingByCategoryProps) {
   return (
     <div className="rounded-lg border border-border bg-card p-6 shadow-sm">
-      <div className="flex items-center justify-between pb-4 border-b border-border">
+      <div className="flex items-center justify-between border-b border-border pb-4">
         <div>
-          <h2 className="headline-sm text-foreground font-semibold">Spending by Category</h2>
-          <p className="body-sm text-muted-foreground">October total breakdown</p>
+          <h2 className="headline-sm font-semibold text-foreground">
+            Spending by Category
+          </h2>
+          <p className="body-sm text-muted-foreground">
+            October total breakdown
+          </p>
         </div>
-        <span className="numeric-sm text-muted-foreground">{categories.length} Categories</span>
+        <span className="numeric-sm text-muted-foreground">
+          {categories.length} Categories
+        </span>
       </div>
-      
+
       <div className="mt-5 space-y-4">
         {categories.map((category) => (
-          <CategorySpendingItem 
+          <CategorySpendingItem
             key={category.name}
             name={category.name}
             amount={category.amount}

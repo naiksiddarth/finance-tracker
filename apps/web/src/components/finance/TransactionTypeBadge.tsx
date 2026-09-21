@@ -7,8 +7,8 @@ interface TransactionTypeBadgeProps {
 
 export function TransactionTypeBadge({ category }: TransactionTypeBadgeProps) {
   // Map standard categories to visual styles based on design
-  let badgeStyles;
-  
+  let badgeStyles
+
   const categoryLower = category.toLowerCase()
   if (categoryLower === "salary" || categoryLower === "consulting") {
     badgeStyles = "bg-success text-success-foreground border-transparent"
@@ -17,9 +17,9 @@ export function TransactionTypeBadge({ category }: TransactionTypeBadgeProps) {
   }
 
   return (
-    <Badge  
-      variant="outline" 
-      className={cn("px-2 py-0.5 rounded-lg label-sm font-medium", badgeStyles)}
+    <Badge
+      variant="outline"
+      className={cn("rounded-lg px-2 py-0.5 label-sm font-medium", badgeStyles)}
     >
       {category}
     </Badge>

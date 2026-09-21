@@ -7,7 +7,12 @@ interface CategorySpendingItemProps {
   colorClass: string
 }
 
-export function CategorySpendingItem({ name, amount, percentage, colorClass }: CategorySpendingItemProps) {
+export function CategorySpendingItem({
+  name,
+  amount,
+  percentage,
+  colorClass,
+}: CategorySpendingItemProps) {
   // Format amount as currency
   const formattedAmount = new Intl.NumberFormat("en-US", {
     style: "currency",
@@ -16,17 +21,23 @@ export function CategorySpendingItem({ name, amount, percentage, colorClass }: C
 
   return (
     <div>
-      <div className="flex justify-between items-center body-sm mb-1.5">
+      <div className="mb-1.5 flex items-center justify-between body-sm">
         <div className="flex items-center gap-2">
-          <span className={cn("w-2.5 h-2.5 rounded-full", colorClass)}></span>
+          <span className={cn("h-2.5 w-2.5 rounded-full", colorClass)}></span>
           <span className="font-medium text-foreground">{name}</span>
         </div>
         <div className="numeric-sm text-foreground">
-          {formattedAmount} <span className="text-muted-foreground font-normal">({percentage}%)</span>
+          {formattedAmount}{" "}
+          <span className="font-normal text-muted-foreground">
+            ({percentage}%)
+          </span>
         </div>
       </div>
-      <div className="w-full bg-muted rounded-full h-1.5 overflow-hidden">
-        <div className={cn("h-1.5 rounded-full", colorClass)} style={{ width: `${percentage}%` }}></div>
+      <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
+        <div
+          className={cn("h-1.5 rounded-full", colorClass)}
+          style={{ width: `${percentage}%` }}
+        ></div>
       </div>
     </div>
   )
