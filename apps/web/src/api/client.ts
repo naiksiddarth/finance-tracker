@@ -5,8 +5,6 @@ import {
   type ErrorCode,
 } from "@finance-tracker/shared/constants/errorCodes"
 
-export { ApiError as AppError }
-
 interface User {
   _id: string
   username: string
@@ -106,7 +104,7 @@ export async function apiRequest<T>(
       message?: string
       data?: unknown
     } | null
-
+    console.log(errorData?.code)
     throw new ApiError(
       response.status,
       errorData?.code ?? ERROR_CODES.UNKNOWN_ERROR,

@@ -1,11 +1,7 @@
 import { createContext, useEffect, useState, type ReactNode } from "react"
 
-import {
-  apiRequest,
-  setAccessToken,
-  refreshAccessToken,
-  AppError,
-} from "@/api/client"
+import { apiRequest, setAccessToken, refreshAccessToken } from "@/api/client"
+import { ApiError } from "@/api/api-error"
 
 interface User {
   _id: string
@@ -63,7 +59,7 @@ export function AuthContextProvider({ children }: { children: ReactNode }) {
       setUser(res.user)
       setAccessToken(res.accessToken)
     } catch (err: any) {
-      if (err instanceof AppError) {
+      if (err instanceof ApiError) {
         throw err
       }
 
