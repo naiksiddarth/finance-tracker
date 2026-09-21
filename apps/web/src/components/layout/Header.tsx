@@ -1,13 +1,6 @@
 import * as React from "react"
 import { Link, useLocation } from "react-router-dom"
-import {
-  Wallet,
-  CalendarDays,
-  ChevronDown,
-  Bell,
-  Moon,
-  Plus,
-} from "lucide-react"
+import { Wallet, Bell, Moon, Plus } from "lucide-react"
 import { cn } from "@workspace/ui/lib/utils"
 import { Button } from "@workspace/ui/components/button"
 import { Avatar, AvatarFallback } from "@workspace/ui/components/avatar"
@@ -59,17 +52,6 @@ export function Header({ navLinks }: { navLinks: NavLinkProps }) {
 
         {/* Trailing Controls Cluster */}
         <div className="flex items-center gap-3">
-          {/* Month Picker dropdown */}
-          <Button
-            variant="outline"
-            size="sm"
-            className="hidden h-8 items-center gap-1.5 rounded-lg border-border bg-card px-3 label-md text-foreground transition-colors hover:bg-muted sm:flex"
-          >
-            <CalendarDays className="h-4 w-4 text-muted-foreground" />
-            <span>October 2024</span>
-            <ChevronDown className="h-4 w-4 text-muted-foreground" />
-          </Button>
-
           {/* Trailing Icon Actions */}
           <Button
             variant="outline"

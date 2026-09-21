@@ -4,6 +4,8 @@ import {
   ArrowUpCircle,
   PiggyBank,
   Download,
+  CalendarDays,
+  ChevronDown,
 } from "lucide-react"
 import { Button } from "@workspace/ui/components/button"
 import { ButtonGroup } from "@workspace/ui/components/button-group"
@@ -39,30 +41,42 @@ export function Dashboard() {
             Welcome back, Alex. Here is your financial overview for October.
           </p>
         </div>
-        {/* Date Range Filter Pill Group */}
-        <ButtonGroup className="inline-flex items-center gap-1 self-start rounded-lg border border-border bg-card p-0.5 *:data-[slot=button]:rounded-md! md:self-auto">
+        <div className="flex flex-wrap items-center gap-2 self-start md:self-auto">
           <Button
-            variant="default"
+            variant="outline"
             size="sm"
-            className="h-7 rounded-md px-3 label-md"
+            className="h-8 items-center gap-1.5 rounded-lg border-border bg-card px-3 label-md text-foreground transition-colors hover:bg-muted"
           >
-            This Month
+            <CalendarDays className="h-4 w-4 text-muted-foreground" />
+            <span>October 2024</span>
+            <ChevronDown className="h-4 w-4 text-muted-foreground" />
           </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-7 rounded-md px-3 label-md text-muted-foreground"
-          >
-            Last 30 Days
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-7 rounded-md px-3 label-md text-muted-foreground"
-          >
-            Year to Date
-          </Button>
-        </ButtonGroup>
+
+          {/* Date Range Filter Pill Group */}
+          <ButtonGroup className="inline-flex items-center gap-1 rounded-lg border border-border bg-card p-0.5 *:data-[slot=button]:rounded-md!">
+            <Button
+              variant="default"
+              size="sm"
+              className="h-7 rounded-md px-3 label-md"
+            >
+              This Month
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-7 rounded-md px-3 label-md text-muted-foreground"
+            >
+              Last 30 Days
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-7 rounded-md px-3 label-md text-muted-foreground"
+            >
+              Year to Date
+            </Button>
+          </ButtonGroup>
+        </div>
       </div>
 
       {/* TOP METRIC CARDS */}
