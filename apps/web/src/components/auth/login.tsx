@@ -27,22 +27,29 @@ interface ValidationIssue {
   message: string
 }
 
+type LoginMethod = "email" | "username"
+
 function getLoginFieldError(
   error: ApiError | null,
-  field: "email" | "password"
+  field: "email" | "username" | "password"
 ) {
   if (!error) return null
 
   if (Array.isArray(error.data)) {
-    const issue = (error.data as ValidationIssue[]).find(
-      (item) => item.path[0] === field
+    const issue = (error.data as ValidationIssue[]).find((item) =>
+      item.path.includes(field)
     )
 
     if (issue) return issue.message
   }
 
-  if (field === "email" && error.code === ERROR_CODES.NOT_FOUND) {
-    return "Email does not exist"
+  if (
+    (field === "email" || field === "username") &&
+    error.code === ERROR_CODES.NOT_FOUND
+  ) {
+    return field === "email"
+      ? "Email does not exist"
+      : "Username does not exist"
   }
 
   if (field === "password" && error.code === ERROR_CODES.INVALID_PASSWORD) {
@@ -56,7 +63,9 @@ export function LoginForm({
   ...props
 }: React.ComponentProps<"div">) {
   const [email, setEmail] = useState("")
+  const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
+  const [loginMethod, setLoginMethod] = useState<LoginMethod>("email")
   const [error, setError] = useState<ApiError | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const navigate = useNavigate()
@@ -64,6 +73,7 @@ export function LoginForm({
   const auth = useContext(AuthContext)
 
   const emailError = getLoginFieldError(error, "email")
+  const usernameError = getLoginFieldError(error, "username")
   const passwordError = getLoginFieldError(error, "password")
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -74,7 +84,10 @@ export function LoginForm({
     setError(null)
     setIsSubmitting(true)
     try {
-      await auth.login(email, password)
+      await auth.login({
+        [loginMethod]: loginMethod === "email" ? email : username,
+        password,
+      })
       navigate("/")
     } catch (err: unknown) {
       if (err instanceof ApiError) {
@@ -104,23 +117,68 @@ export function LoginForm({
         <CardContent>
           <form onSubmit={handleSubmit}>
             <FieldGroup>
-              <Field>
-                <FieldLabel htmlFor="email">Email</FieldLabel>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="m@example.com"
-                  required
-                  value={email}
-                  onChange={(e) => {
-                    setEmail(e.target.value)
-                    if (emailError) {
-                      setError(null)
-                    }
+              <div
+                className="flex gap-2"
+                role="group"
+                aria-label="Login method"
+              >
+                <Button
+                  type="button"
+                  variant={loginMethod === "email" ? "default" : "outline"}
+                  onClick={() => {
+                    setLoginMethod("email")
+                    setError(null)
                   }}
-                  aria-invalid={Boolean(emailError)}
-                />
-                {emailError && <FieldError>{emailError}</FieldError>}
+                >
+                  Email
+                </Button>
+                <Button
+                  type="button"
+                  variant={loginMethod === "username" ? "default" : "outline"}
+                  onClick={() => {
+                    setLoginMethod("username")
+                    setError(null)
+                  }}
+                >
+                  Username
+                </Button>
+              </div>
+              <Field>
+                {loginMethod === "email" ? (
+                  <>
+                    <FieldLabel htmlFor="email">Email</FieldLabel>
+                    <Input
+                      id="email"
+                      type="email"
+                      placeholder="m@example.com"
+                      required
+                      value={email}
+                      onChange={(e) => {
+                        setEmail(e.target.value)
+                        if (emailError) setError(null)
+                      }}
+                      aria-invalid={Boolean(emailError)}
+                    />
+                    {emailError && <FieldError>{emailError}</FieldError>}
+                  </>
+                ) : (
+                  <>
+                    <FieldLabel htmlFor="username">Username</FieldLabel>
+                    <Input
+                      id="username"
+                      type="text"
+                      placeholder="johndoe"
+                      required
+                      value={username}
+                      onChange={(e) => {
+                        setUsername(e.target.value)
+                        if (usernameError) setError(null)
+                      }}
+                      aria-invalid={Boolean(usernameError)}
+                    />
+                    {usernameError && <FieldError>{usernameError}</FieldError>}
+                  </>
+                )}
               </Field>
               <Field>
                 <div className="flex items-center">
@@ -148,11 +206,9 @@ export function LoginForm({
 
                 {passwordError && <FieldError>{passwordError}</FieldError>}
               </Field>
-              {error &&
-                error.code !== ERROR_CODES.NOT_FOUND &&
-                error.code !== ERROR_CODES.INVALID_PASSWORD && (
-                  <FieldError>{error.message}</FieldError>
-                )}
+              {error && !emailError && !usernameError && !passwordError && (
+                <FieldError>{error.message}</FieldError>
+              )}
               <Field>
                 <Button type="submit" disabled={isSubmitting}>
                   {isSubmitting ? "Logging in..." : "Login"}

@@ -13,8 +13,14 @@ interface AuthContextValues {
   user: User | null
   isAuthenticated: boolean
   isLoading: boolean
-  login: (email: string, password: string) => Promise<void>
+  login: (credentials: LoginCredentials) => Promise<void>
   logout: () => Promise<void>
+}
+
+interface LoginCredentials {
+  email?: string
+  username?: string
+  password: string
 }
 
 interface LoginResponse {
@@ -45,16 +51,13 @@ export function AuthContextProvider({ children }: { children: ReactNode }) {
     checkAuth()
   }, [])
 
-  async function login(email: string, password: string) {
+  async function login(credentials: LoginCredentials) {
     setIsLoading(true)
 
     try {
       const res: LoginResponse = await apiRequest("/auth/login", {
         method: "POST",
-        body: JSON.stringify({
-          email,
-          password,
-        }),
+        body: JSON.stringify(credentials),
       })
       setUser(res.user)
       setAccessToken(res.accessToken)
