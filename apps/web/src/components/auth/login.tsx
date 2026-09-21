@@ -22,6 +22,35 @@ import {
 import { Input } from "@workspace/ui/components/input"
 import { AuthContext } from "../../AuthContextProvider"
 
+interface ValidationIssue {
+  path: Array<string | number>
+  message: string
+}
+
+function getLoginFieldError(
+  error: ApiError | null,
+  field: "email" | "password"
+) {
+  if (!error) return null
+
+  if (Array.isArray(error.data)) {
+    const issue = (error.data as ValidationIssue[]).find(
+      (item) => item.path[0] === field
+    )
+
+    if (issue) return issue.message
+  }
+
+  if (field === "email" && error.code === ERROR_CODES.NOT_FOUND) {
+    return "Email does not exist"
+  }
+
+  if (field === "password" && error.code === ERROR_CODES.INVALID_PASSWORD) {
+    return "Invalid password"
+  }
+
+  return null
+}
 export function LoginForm({
   className,
   ...props
@@ -33,6 +62,9 @@ export function LoginForm({
   const navigate = useNavigate()
 
   const auth = useContext(AuthContext)
+
+  const emailError = getLoginFieldError(error, "email")
+  const passwordError = getLoginFieldError(error, "password")
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -82,15 +114,13 @@ export function LoginForm({
                   value={email}
                   onChange={(e) => {
                     setEmail(e.target.value)
-                    if (error?.code === ERROR_CODES.NOT_FOUND) {
+                    if (emailError) {
                       setError(null)
                     }
                   }}
-                  aria-invalid={error?.code === ERROR_CODES.NOT_FOUND}
+                  aria-invalid={Boolean(emailError)}
                 />
-                {error?.code === ERROR_CODES.NOT_FOUND && (
-                  <FieldError>Email does not exist</FieldError>
-                )}
+                {emailError && <FieldError>{emailError}</FieldError>}
               </Field>
               <Field>
                 <div className="flex items-center">
@@ -109,16 +139,14 @@ export function LoginForm({
                   value={password}
                   onChange={(e) => {
                     setPassword(e.target.value)
-                    if (error?.code === ERROR_CODES.INVALID_PASSWORD) {
+                    if (passwordError) {
                       setError(null)
                     }
                   }}
-                  aria-invalid={error?.code === ERROR_CODES.INVALID_PASSWORD}
+                  aria-invalid={Boolean(passwordError)}
                 />
 
-                {error?.code === ERROR_CODES.INVALID_PASSWORD && (
-                  <FieldError>Invalid password</FieldError>
-                )}
+                {passwordError && <FieldError>{passwordError}</FieldError>}
               </Field>
               {error &&
                 error.code !== ERROR_CODES.NOT_FOUND &&

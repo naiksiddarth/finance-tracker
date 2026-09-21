@@ -19,6 +19,54 @@ import {
 } from "@workspace/ui/components/field"
 import { Input } from "@workspace/ui/components/input"
 import { apiRequest } from "@/api/client"
+import { ApiError } from "@/api/api-error"
+import { ERROR_CODES } from "@finance-tracker/shared/constants/errorCodes"
+
+interface ValidationIssue {
+  path: Array<string | number>
+  message: string
+}
+
+function getRegisterFieldError(error: ApiError | null, field: string) {
+  if (!error) return null
+
+  if (Array.isArray(error.data)) {
+    const issue = (error.data as ValidationIssue[]).find(
+      (item) => item.path[0] === field
+    )
+
+    if (issue) return issue.message
+  }
+
+  if (
+    field === "email" &&
+    (error.code === ERROR_CODES.DUPLICATE_EMAIL ||
+      error.code === ERROR_CODES.INVALID_EMAIL)
+  ) {
+    return error.message
+  }
+
+  if (
+    field === "username" &&
+    (error.code === ERROR_CODES.DUPLICATE_USERNAME ||
+      error.code === ERROR_CODES.USERNAME_TOO_SHORT)
+  ) {
+    return error.message
+  }
+
+  if (field === "password" && error.code === ERROR_CODES.PASSWORD_TOO_SHORT) {
+    return error.message
+  }
+
+  if (
+    field === "confirmPassword" &&
+    error.code === ERROR_CODES.PASSWORD_CONFIRMATION_MISMATCH
+  ) {
+    return error.message
+  }
+
+  return null
+}
 
 export function RegisterForm({
   className,
@@ -27,17 +75,28 @@ export function RegisterForm({
   const [username, setUsername] = useState("")
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
-  const [error, setError] = useState("")
+  const [error, setError] = useState<ApiError | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [confirmPassword, setConfirmPassword] = useState("")
   const navigate = useNavigate()
 
+  const usernameError = getRegisterFieldError(error, "username")
+  const emailError = getRegisterFieldError(error, "email")
+  const passwordError = getRegisterFieldError(error, "password")
+  const confirmPasswordError = getRegisterFieldError(error, "confirmPassword")
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setError("")
+    setError(null)
     setIsSubmitting(true)
     if (password !== confirmPassword) {
-      setError("Passwords do not match")
+      setError(
+        new ApiError(
+          400,
+          ERROR_CODES.PASSWORD_CONFIRMATION_MISMATCH,
+          "Passwords do not match"
+        )
+      )
       setIsSubmitting(false)
       return
     }
@@ -48,8 +107,14 @@ export function RegisterForm({
       })
       // On success, redirect to login so they can log in
       navigate("/login")
-    } catch (err: any) {
-      setError(err.message || "Registration failed")
+    } catch (err: unknown) {
+      if (err instanceof ApiError) {
+        setError(err)
+      } else {
+        setError(
+          new ApiError(500, ERROR_CODES.UNKNOWN_ERROR, "Registration failed")
+        )
+      }
     } finally {
       setIsSubmitting(false)
     }
@@ -70,7 +135,6 @@ export function RegisterForm({
         <CardContent>
           <form onSubmit={handleSubmit}>
             <FieldGroup>
-              {error && <FieldError>{error}</FieldError>}
               <Field>
                 <FieldLabel htmlFor="username">Username</FieldLabel>
                 <Input
@@ -79,8 +143,13 @@ export function RegisterForm({
                   placeholder="johndoe"
                   required
                   value={username}
-                  onChange={(e) => setUsername(e.target.value)}
+                  onChange={(e) => {
+                    setUsername(e.target.value)
+                    if (usernameError) setError(null)
+                  }}
+                  aria-invalid={Boolean(usernameError)}
                 />
+                {usernameError && <FieldError>{usernameError}</FieldError>}
               </Field>
               <Field>
                 <FieldLabel htmlFor="email">Email</FieldLabel>
@@ -90,8 +159,13 @@ export function RegisterForm({
                   placeholder="m@example.com"
                   required
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e) => {
+                    setEmail(e.target.value)
+                    if (emailError) setError(null)
+                  }}
+                  aria-invalid={Boolean(emailError)}
                 />
+                {emailError && <FieldError>{emailError}</FieldError>}
               </Field>
               <Field>
                 <FieldLabel htmlFor="password">Password</FieldLabel>
@@ -100,8 +174,13 @@ export function RegisterForm({
                   type="password"
                   required
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e) => {
+                    setPassword(e.target.value)
+                    if (passwordError) setError(null)
+                  }}
+                  aria-invalid={Boolean(passwordError)}
                 />
+                {passwordError && <FieldError>{passwordError}</FieldError>}
               </Field>
               <Field>
                 <FieldLabel htmlFor="confirmPassword">
@@ -112,8 +191,15 @@ export function RegisterForm({
                   type="password"
                   required
                   value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  onChange={(e) => {
+                    setConfirmPassword(e.target.value)
+                    if (confirmPasswordError) setError(null)
+                  }}
+                  aria-invalid={Boolean(confirmPasswordError)}
                 />
+                {confirmPasswordError && (
+                  <FieldError>{confirmPasswordError}</FieldError>
+                )}
               </Field>
               <Field>
                 <Button type="submit" disabled={isSubmitting}>
