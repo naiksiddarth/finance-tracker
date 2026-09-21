@@ -9,7 +9,7 @@ class ApiResponse<T = unknown> {
     statusCode: number,
     data: T | null = null,
     message: string = "Success",
-    code?: string,
+    code?: string
   ) {
     this.statusCode = statusCode
     this.data = data

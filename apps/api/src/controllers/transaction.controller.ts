@@ -29,7 +29,9 @@ const getTransactions = asyncHandler(async (req, res) => {
   const transactions = await Transaction.find({ user: req.user?._id }).sort({
     date: -1,
   })
-  res.status(200).json(new ApiResponse(200, transactions, "Transactions fetch succesfull"))
+  res
+    .status(200)
+    .json(new ApiResponse(200, transactions, "Transactions fetch succesfull"))
 })
 
 export { createTransaction, getTransactions }
