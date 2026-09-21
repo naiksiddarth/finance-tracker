@@ -4,6 +4,7 @@ import z from "zod"
 
 import {
   ERROR_CODES,
+  ERROR_MESSAGES,
   type ErrorCode,
 } from "@finance-tracker/shared/constants/errorCodes"
 
@@ -43,7 +44,8 @@ function handleError(
 
     data = err.issues.map((issue) => ({
       path: issue.path,
-      message: issue.message,
+      code: issue.message,
+      message: ERROR_MESSAGES[issue.message as ErrorCode]
     }))
   }
 

@@ -2,6 +2,7 @@ export const ERROR_CODES = {
   DUPLICATE: "DUPLICATE",
   DUPLICATE_EMAIL: "DUPLICATE_EMAIL",
   DUPLICATE_USERNAME: "DUPLICATE_USERNAME",
+  EMAIL_OR_USERNAME_REQUIRED: "EMAIL_OR_USERNAME_REQUIRED",
 
   INTERNAL_SERVER_ERROR: "INTERNAL_SERVER_ERROR",
 
@@ -26,5 +27,35 @@ export const ERROR_CODES = {
 
   UNKNOWN_ERROR: "UNKNOWN_ERROR",
 } as const
+
+export const ERROR_MESSAGES: Record<ErrorCode, string> = {
+  [ERROR_CODES.DUPLICATE]: "Resource already exists",
+  [ERROR_CODES.DUPLICATE_EMAIL]: "Email is already registered",
+  [ERROR_CODES.DUPLICATE_USERNAME]: "Username is already registered",
+  [ERROR_CODES.EMAIL_OR_USERNAME_REQUIRED]:
+    "Either email or username must be present",
+  [ERROR_CODES.INTERNAL_SERVER_ERROR]: "Internal server error",
+
+  [ERROR_CODES.NOT_FOUND]: "Resource not found",
+
+  [ERROR_CODES.INVALID_PASSWORD]: "Invalid password",
+
+  [ERROR_CODES.UNAUTHORIZED]: "Authentication required",
+  [ERROR_CODES.FORBIDDEN]: "Access denied",
+
+  [ERROR_CODES.BAD_REQUEST]: "Bad request",
+  [ERROR_CODES.CONFLICT]: "Conflict",
+  [ERROR_CODES.UNPROCESSABLE_ENTITY]: "Unprocessable entity",
+  [ERROR_CODES.RATE_LIMIT_EXCEEDED]: "Rate limit exceeded",
+
+  [ERROR_CODES.VALIDATION_ERROR]: "Validation failed",
+
+  [ERROR_CODES.INVALID_EMAIL]: "Invalid email address",
+  [ERROR_CODES.PASSWORD_TOO_SHORT]: "Password must be at least 6 characters long",
+  [ERROR_CODES.USERNAME_TOO_SHORT]: "Username must be at least 4 characters long",
+  [ERROR_CODES.PASSWORD_CONFIRMATION_MISMATCH]: "Passwords do not match",
+
+  [ERROR_CODES.UNKNOWN_ERROR]: "An unknown error occurred",
+}
 
 export type ErrorCode = (typeof ERROR_CODES)[keyof typeof ERROR_CODES]
