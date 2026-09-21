@@ -119,12 +119,12 @@ export function LoginForm({
                 {error?.code === ERROR_CODES.INVALID_PASSWORD && (
                   <FieldError>Invalid password</FieldError>
                 )}
-                {error &&
-                  error.code !== ERROR_CODES.NOT_FOUND &&
-                  error.code !== ERROR_CODES.INVALID_PASSWORD && (
-                    <FieldError>{error.message}</FieldError>
-                  )}
               </Field>
+              {error &&
+                error.code !== ERROR_CODES.NOT_FOUND &&
+                error.code !== ERROR_CODES.INVALID_PASSWORD && (
+                  <FieldError>{error.message}</FieldError>
+                )}
               <Field>
                 <Button type="submit" disabled={isSubmitting}>
                   {isSubmitting ? "Logging in..." : "Login"}
