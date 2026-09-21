@@ -39,7 +39,7 @@ export function AuthContextProvider({ children }: { children: ReactNode }) {
     try {
       const data = await refreshAccessToken()
       setUser(data.user)
-    } catch (err) {
+    } catch {
       setAccessToken(null)
       setUser(null)
     } finally {
@@ -48,7 +48,9 @@ export function AuthContextProvider({ children }: { children: ReactNode }) {
   }
 
   useEffect(() => {
-    checkAuth()
+    queueMicrotask(() => {
+      void checkAuth()
+    })
   }, [])
 
   async function login(credentials: LoginCredentials) {
@@ -61,7 +63,7 @@ export function AuthContextProvider({ children }: { children: ReactNode }) {
       })
       setUser(res.user)
       setAccessToken(res.accessToken)
-    } catch (err: any) {
+    } catch (err: unknown) {
       if (err instanceof ApiError) {
         throw err
       }
