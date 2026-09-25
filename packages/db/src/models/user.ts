@@ -2,10 +2,16 @@ import mongoose, { Model } from "mongoose"
 import bcrypt from "bcrypt"
 import jwt from "jsonwebtoken"
 
+import {
+  Currency,
+  CurrencyValues,
+} from "@finance-tracker/shared/constants/transactions"
+
 export interface IUser {
   _id: string
   username: string
   email: string
+  currency: Currency
   password: string
   refreshToken: string
 }
@@ -28,6 +34,11 @@ export const UserSchema = new mongoose.Schema<IUser, UserModel, IUserMethods>({
     type: String,
     required: true,
     unique: true,
+  },
+  currency: {
+    type: String,
+    enum: CurrencyValues,
+    default: "USD",
   },
   refreshToken: {
     type: String,
