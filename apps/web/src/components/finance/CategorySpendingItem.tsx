@@ -1,4 +1,6 @@
 import { cn } from "@workspace/ui/lib/utils"
+import { useAuth } from "@/hooks/use-auth"
+import { formatCurrency } from "@/lib/currency"
 
 interface CategorySpendingItemProps {
   name: string
@@ -13,11 +15,8 @@ export function CategorySpendingItem({
   percentage,
   colorClass,
 }: CategorySpendingItemProps) {
-  // Format amount as currency
-  const formattedAmount = new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-  }).format(amount)
+  const { currency } = useAuth()
+  const formattedAmount = formatCurrency(amount, currency)
 
   return (
     <div>

@@ -1,22 +1,19 @@
 import { AlertTriangle, CheckCircle } from "lucide-react"
 import type { BudgetSnapshot as BudgetSnapshotType } from "../../data/mock-data"
 import { cn } from "@workspace/ui/lib/utils"
+import { useAuth } from "@/hooks/use-auth"
+import { formatCurrency } from "@/lib/currency"
 
 interface BudgetSnapshotProps {
   snapshot: BudgetSnapshotType
 }
 
 export function BudgetSnapshot({ snapshot }: BudgetSnapshotProps) {
+  const { currency } = useAuth()
   const percentageUsed = Math.round((snapshot.spent / snapshot.limit) * 100)
 
-  const formattedSpent = new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-  }).format(snapshot.spent)
-  const formattedLimit = new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-  }).format(snapshot.limit)
+  const formattedSpent = formatCurrency(snapshot.spent, currency)
+  const formattedLimit = formatCurrency(snapshot.limit, currency)
 
   return (
     <div className="rounded-lg border border-border bg-card p-6 shadow-sm">

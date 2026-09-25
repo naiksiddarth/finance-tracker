@@ -4,12 +4,13 @@ import {
   ArrowUpCircle,
   PiggyBank,
   Download,
-  CalendarDays,
-  ChevronDown,
 } from "lucide-react"
 import { Button } from "@workspace/ui/components/button"
 import { ButtonGroup } from "@workspace/ui/components/button-group"
 import { Card, CardContent } from "@workspace/ui/components/card"
+import { useAuth } from "@/hooks/use-auth"
+import { formatCurrency } from "@/lib/currency"
+
 import { MetricCard } from "../components/finance/MetricCard"
 import { IncomeExpenseChart } from "../components/dashboard/IncomeExpenseChart"
 import { RecentTransactions } from "../components/dashboard/RecentTransactions"
@@ -24,6 +25,7 @@ import {
 } from "../data/mock-data"
 
 export function Dashboard() {
+  const { currency } = useAuth()
   const metricIcons = [
     <Wallet key="1" className="h-5 w-5 text-muted-foreground" />,
     <ArrowDownCircle key="2" className="h-5 w-5 text-success" />,
@@ -42,16 +44,6 @@ export function Dashboard() {
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2 self-start md:self-auto">
-          <Button
-            variant="outline"
-            size="sm"
-            className="h-8 items-center gap-1.5 rounded-lg border-border bg-card px-3 label-md text-foreground transition-colors hover:bg-muted"
-          >
-            <CalendarDays className="h-4 w-4 text-muted-foreground" />
-            <span>October 2024</span>
-            <ChevronDown className="h-4 w-4 text-muted-foreground" />
-          </Button>
-
           {/* Date Range Filter Pill Group */}
           <ButtonGroup className="inline-flex items-center gap-1 rounded-lg border border-border bg-card p-0.5 *:data-[slot=button]:rounded-md!">
             <Button
@@ -101,8 +93,8 @@ export function Dashboard() {
             <MetricCard
               key={index}
               title={metric.title}
-              value={metric.value}
-              trend={metric.trend as any}
+              value={`${index === 1 || index === 3 ? "+" : ""}${formatCurrency(metric.value as number, currency)}`}
+              trend={metric.trend}
               trendValue={metric.trendValue}
               subtitle={metric.subtitle}
               icon={metricIcons[index]}

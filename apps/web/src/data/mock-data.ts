@@ -12,8 +12,8 @@ export interface Transaction {
 
 export interface Metric {
   title: string
-  value: string
-  trend?: string
+  value: number
+  trend?: "up" | "down" | "neutral"
   trendValue?: string
   subtitle?: string
 }
@@ -88,26 +88,26 @@ export const MOCK_TRANSACTIONS: Transaction[] = [
 export const MOCK_METRICS: Metric[] = [
   {
     title: "Total Balance",
-    value: "$24,850.40",
+    value: 24850.40,
     trend: "up",
     trendValue: "+4.2%",
     subtitle: "from last month",
   },
   {
     title: "Total Income",
-    value: "+$7,420.00",
+    value: 7420.00,
     trend: "down",
     subtitle: "2 deposits this month",
   },
   {
     title: "Total Expenses",
-    value: "-$3,845.20",
+    value: 3845.20,
     trend: "up",
     subtitle: "54% of monthly budget",
   },
   {
     title: "Net Cash Flow",
-    value: "+$3,574.80",
+    value: 3574.80,
     trendValue: "48.2% saved",
     subtitle: "positive trajectory",
   },
@@ -137,12 +137,12 @@ export const MOCK_BUDGET_SNAPSHOT: BudgetSnapshot = {
   alerts: [
     {
       title: "Dining Out Limit Alert",
-      description: "92% used ($340 / $370 max limit)",
+      description: "92% used (340 / 370 max limit)",
       status: "warning",
     },
     {
       title: "Groceries on Schedule",
-      description: "62% used ($620 / $1,000 max limit)",
+      description: "62% used (620 / 1,000 max limit)",
       status: "success",
     },
   ],
@@ -153,28 +153,28 @@ export const MOCK_CASH_FLOW = [
     label: "Week 1 (Oct 1-7)",
     incomeHeight: "85%",
     expenseHeight: "42%",
-    incomeTitle: "Week 1 Income: $3,710",
-    expenseTitle: "Week 1 Expenses: $1,420",
+    incomeAmount: 3710,
+    expenseAmount: 1420,
   },
   {
     label: "Week 2 (Oct 8-14)",
     incomeHeight: "20%",
     expenseHeight: "60%",
-    incomeTitle: "Week 2 Income: $450",
-    expenseTitle: "Week 2 Expenses: $980",
+    incomeAmount: 450,
+    expenseAmount: 980,
   },
   {
     label: "Week 3 (Oct 15-21)",
     incomeHeight: "75%",
     expenseHeight: "38%",
-    incomeTitle: "Week 3 Income: $3,260",
-    expenseTitle: "Week 3 Expenses: $810",
+    incomeAmount: 3260,
+    expenseAmount: 810,
   },
   {
     label: "Week 4 (Oct 22-28)",
     incomeHeight: "15%",
     expenseHeight: "32%",
-    incomeTitle: "Week 4 Income: $0",
-    expenseTitle: "Week 4 Expenses: $635",
+    incomeAmount: 0,
+    expenseAmount: 635,
   },
 ]

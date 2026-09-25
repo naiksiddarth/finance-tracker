@@ -1,6 +1,5 @@
-import * as React from "react"
 import { Dialog, DialogContent } from "@workspace/ui/components/dialog"
-import { TransactionForm } from "./TransactionForm"
+import { TransactionForm } from "@/components/transactions/TransactionForm"
 
 interface TransactionModalProps {
   isOpen: boolean

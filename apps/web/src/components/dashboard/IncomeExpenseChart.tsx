@@ -1,12 +1,14 @@
 import { CheckCircle2 } from "lucide-react"
+import { useAuth } from "@/hooks/use-auth"
+import { formatCurrency } from "@/lib/currency"
 
 interface IncomeExpenseChartProps {
   data: {
     label: string
     incomeHeight: string
     expenseHeight: string
-    incomeTitle: string
-    expenseTitle: string
+    incomeAmount: number
+    expenseAmount: number
   }[]
   weeklyAvg: number
 }
@@ -15,10 +17,8 @@ export function IncomeExpenseChart({
   data,
   weeklyAvg,
 }: IncomeExpenseChartProps) {
-  const formattedWeeklyAvg = new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-  }).format(weeklyAvg)
+  const { currency } = useAuth()
+  const formattedWeeklyAvg = formatCurrency(weeklyAvg, currency)
 
   return (
     <div className="rounded-lg border border-border bg-card shadow-sm">
@@ -63,12 +63,12 @@ export function IncomeExpenseChart({
                 <div
                   className="w-6 rounded-t-sm bg-success transition-all hover:opacity-90 sm:w-8"
                   style={{ height: item.incomeHeight }}
-                  title={item.incomeTitle}
+                  title={`Week ${index + 1} Income: ${formatCurrency(item.incomeAmount, currency)}`}
                 ></div>
                 <div
                   className="w-6 rounded-t-sm bg-destructive transition-all hover:opacity-90 sm:w-8"
                   style={{ height: item.expenseHeight }}
-                  title={item.expenseTitle}
+                  title={`Week ${index + 1} Expenses: ${formatCurrency(item.expenseAmount, currency)}`}
                 ></div>
               </div>
             ))}

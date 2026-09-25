@@ -7,7 +7,7 @@ import { Button } from "@workspace/ui/components/button"
 import { Input } from "@workspace/ui/components/input"
 import { Label } from "@workspace/ui/components/label"
 import { Textarea } from "@workspace/ui/components/textarea"
-import { Badge } from "@workspace/ui/components/badge"
+
 import {
   Select,
   SelectContent,
@@ -25,7 +25,9 @@ import {
 import {
   TransactionTypeSelector,
   type TransactionType,
-} from "./TransactionTypeSelector"
+} from "@/components/transactions/TransactionTypeSelector"
+import { useAuth } from "@/hooks/use-auth"
+import { CurrencySymbols } from "@finance-tracker/shared/constants/transactions"
 
 export interface TransactionFormProps {
   mode: "add" | "edit"
@@ -33,6 +35,7 @@ export interface TransactionFormProps {
 }
 
 export function TransactionForm({ mode, onClose }: TransactionFormProps) {
+  const { currency } = useAuth()
   const [type, setType] = React.useState<TransactionType>(
     mode === "edit" ? "expense" : "expense"
   )
@@ -46,21 +49,6 @@ export function TransactionForm({ mode, onClose }: TransactionFormProps) {
         <h2 className="text-xl font-bold">
           {mode === "add" ? "Add Transaction" : "Edit Transaction"}
         </h2>
-        {mode === "add" ? (
-          <Badge
-            variant="outline"
-            className="border-border text-[10px] font-semibold text-muted-foreground uppercase"
-          >
-            New
-          </Badge>
-        ) : (
-          <Badge
-            variant="secondary"
-            className="bg-muted font-mono text-[10px] text-muted-foreground"
-          >
-            ID: #TXN-88219
-          </Badge>
-        )}
       </div>
 
       <p className="-mt-4 text-sm text-muted-foreground">
@@ -86,63 +74,23 @@ export function TransactionForm({ mode, onClose }: TransactionFormProps) {
             </div>
           ) : (
             <span className="font-mono text-xs text-muted-foreground">
-              USD ($)
+              {currency} ({CurrencySymbols[currency]})
             </span>
           )}
         </div>
         <div className="relative">
           <span className="absolute top-1/2 left-3 -translate-y-1/2 text-lg font-medium text-muted-foreground">
-            $
+            {CurrencySymbols[currency]}
           </span>
           <Input
             type="number"
             className="h-12 pl-7 font-mono text-lg font-medium"
             placeholder="0.00"
             value={amount}
-            onChange={(e) => setAmount(e.target.value)}
+            onChange={(e) => {
+              setAmount(Number(e.target.value) >= 0 ? e.target.value : "")
+            }}
           />
-        </div>
-
-        {/* Quick actions underneath Amount */}
-        <div className="flex items-center justify-between pt-1">
-          {mode === "add" ? (
-            <div className="flex items-center gap-2">
-              <span className="mr-1 text-xs text-muted-foreground">
-                Quick add:
-              </span>
-              {["+$10", "+$25", "+$50", "+$100"].map((btn) => (
-                <Button
-                  key={btn}
-                  variant="outline"
-                  size="sm"
-                  className="h-6 rounded-sm border-border px-2 font-mono text-xs"
-                >
-                  {btn}
-                </Button>
-              ))}
-            </div>
-          ) : (
-            <>
-              <div className="flex items-center gap-2">
-                <span className="mr-1 text-xs text-muted-foreground">
-                  Adjust:
-                </span>
-                {["+10% Tip", "+20% Tip", "Split 50%"].map((btn) => (
-                  <Button
-                    key={btn}
-                    variant="outline"
-                    size="sm"
-                    className="h-6 rounded-sm border-border px-2 font-mono text-xs"
-                  >
-                    {btn}
-                  </Button>
-                ))}
-              </div>
-              <span className="font-mono text-xs text-muted-foreground">
-                Original: -$86.40
-              </span>
-            </>
-          )}
         </div>
       </div>
 
@@ -233,7 +181,7 @@ export function TransactionForm({ mode, onClose }: TransactionFormProps) {
       </div>
 
       {/* Notes */}
-      <div className="space-y-3">
+      <div className="hidden space-y-3">
         <div className="flex items-end justify-between">
           <Label className="text-sm font-medium">
             {mode === "add" ? "Notes (Optional)" : "Notes & Tags"}

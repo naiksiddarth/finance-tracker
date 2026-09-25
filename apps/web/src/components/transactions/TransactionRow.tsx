@@ -4,22 +4,22 @@ import type { Transaction } from "../../data/mock-data"
 import { TransactionTypeBadge } from "../finance/TransactionTypeBadge"
 import { TableCell, TableRow } from "@workspace/ui/components/table"
 import { TransactionModal } from "./TransactionModal"
+import { useAuth } from "@/hooks/use-auth"
+import { formatCurrency } from "@/lib/currency"
 
 interface TransactionRowProps {
   transaction: Transaction
 }
 
 export function TransactionRow({ transaction }: TransactionRowProps) {
+  const { currency } = useAuth()
   const [isEditModalOpen, setIsEditModalOpen] = React.useState(false)
 
   const isCredit = transaction.type === "credit"
   const amountPrefix = isCredit ? "+" : "-"
   const amountColor = isCredit ? "text-success" : "text-destructive"
 
-  const formattedAmount = new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-  }).format(transaction.amount)
+  const formattedAmount = formatCurrency(transaction.amount, currency)
 
   return (
     <>
