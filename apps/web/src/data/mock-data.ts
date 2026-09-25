@@ -88,26 +88,26 @@ export const MOCK_TRANSACTIONS: Transaction[] = [
 export const MOCK_METRICS: Metric[] = [
   {
     title: "Total Balance",
-    value: 24850.40,
+    value: 24850.4,
     trend: "up",
     trendValue: "+4.2%",
     subtitle: "from last month",
   },
   {
     title: "Total Income",
-    value: 7420.00,
+    value: 7420.0,
     trend: "down",
     subtitle: "2 deposits this month",
   },
   {
     title: "Total Expenses",
-    value: 3845.20,
+    value: 3845.2,
     trend: "up",
     subtitle: "54% of monthly budget",
   },
   {
     title: "Net Cash Flow",
-    value: 3574.80,
+    value: 3574.8,
     trendValue: "48.2% saved",
     subtitle: "positive trajectory",
   },
@@ -119,15 +119,20 @@ export const MOCK_CATEGORY_SPENDING: CategorySpending[] = [
     name: "Groceries",
     amount: 620.0,
     percentage: 16,
-    colorClass: "bg-secondary",
+    colorClass: "bg-primary",
   },
-  { name: "Dining Out", amount: 340.0, percentage: 9, colorClass: "bg-error" },
-  { name: "Transport", amount: 215.0, percentage: 6, colorClass: "bg-outline" },
+  {
+    name: "Dining Out",
+    amount: 340.0,
+    percentage: 9,
+    colorClass: "bg-primary",
+  },
+  { name: "Transport", amount: 215.0, percentage: 6, colorClass: "bg-primary" },
   {
     name: "Entertainment",
     amount: 180.0,
     percentage: 5,
-    colorClass: "bg-outline-variant",
+    colorClass: "bg-primary",
   },
 ]
 
