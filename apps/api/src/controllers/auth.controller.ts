@@ -98,11 +98,12 @@ const refreshHandler = asyncHandler(async (req, res) => {
   }
 
   const accessToken = liveUser?.generateAccessToken()
+  const userObject = liveUser.toObject()
   const {
     refreshToken: _refreshToken,
     password: _password,
     ...userWithoutPassword
-  } = liveUser
+  } = userObject
   res.json(
     new ApiResponse(
       200,
