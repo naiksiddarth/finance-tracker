@@ -1,6 +1,7 @@
 import { asyncHandler } from "../utils/async-handler.ts"
 import { ApiResponse } from "../utils/api-response.ts"
-
+import { AppError } from "../utils/api-errors.ts"
+import { ERROR_CODES } from "@finance-tracker/shared/constants/errorCodes"
 import { Transaction } from "@finance-tracker/db/transaction"
 import type { CreateTransaction } from "@finance-tracker/validation/transaction"
 import { User } from "@finance-tracker/db/user"
@@ -63,6 +64,20 @@ const updateTransactions = asyncHandler(async (req, res) => {
     )
 })
 
+const deleteTransaction = asyncHandler(async (req, res) => {
+  const { _id } = req.body
+  if (!_id) {
+    throw new AppError(400, ERROR_CODES.BAD_REQUEST, "Transaction id missing")
+  }
+  const deletedTransaction = await Transaction.findByIdAndDelete(_id)
+  if (!deletedTransaction) {
+    throw new AppError(400, ERROR_CODES.NOT_FOUND, "Transaction not found")
+  }
+  res
+    .status(200)
+    .json(new ApiResponse(200, deletedTransaction, "Transaction deleted"))
+})
+
 const updateCurrency = asyncHandler(async (req, res) => {
   const { currency } = req.body
 
@@ -88,4 +103,5 @@ export {
   getTransactions,
   updateCurrency,
   updateTransactions,
+  deleteTransaction
 }
