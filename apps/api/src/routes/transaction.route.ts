@@ -3,12 +3,14 @@ import { Router } from "express"
 import {
   createTransaction,
   getTransactions,
+  updateTransactions,
+  updateCurrency,
 } from "../controllers/transaction.controller.ts"
 
 import { verifyAccessToken } from "../middlewares/verifyJwt.middleware.ts"
 import { validate } from "../validators/validator.ts"
 
-import { CreateTransactionSchema } from "@finance-tracker/validation/transaction"
+import { CreateTransactionSchema, UpdateTransactionSchema } from "@finance-tracker/validation/transaction"
 
 const transactionRouter = Router()
 
@@ -20,5 +22,9 @@ transactionRouter.post(
 )
 
 transactionRouter.get("/", verifyAccessToken, getTransactions)
+
+transactionRouter.put("/", verifyAccessToken, validate(UpdateTransactionSchema), updateTransactions)
+
+transactionRouter.put("/currency", verifyAccessToken, updateCurrency)
 
 export { transactionRouter }
