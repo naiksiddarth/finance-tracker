@@ -20,7 +20,7 @@ import {
   FieldError,
 } from "@workspace/ui/components/field"
 import { Input } from "@workspace/ui/components/input"
-import { AuthContext } from "../../AuthContextProvider"
+import { AuthContext } from "../../auth-context"
 
 interface ValidationIssue {
   path: Array<string | number>

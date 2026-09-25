@@ -4,11 +4,13 @@ import {
   ERROR_CODES,
   type ErrorCode,
 } from "@finance-tracker/shared/constants/errorCodes"
+import type { Currency } from "@finance-tracker/shared/constants/transactions"
 
 interface User {
   _id: string
   username: string
   email: string
+  currency: Currency
 }
 
 let accessToken: string | null = null
@@ -47,11 +49,17 @@ export async function refreshAccessToken(): Promise<{
         )
       }
 
-      const data = await response.json()
+      const responseData = (await response.json()) as {
+        data: {
+          accessToken: string
+          user: User
+        }
+      }
+      const { accessToken, user } = responseData.data
 
-      setAccessToken(data.accessToken)
+      setAccessToken(accessToken)
 
-      return data
+      return { accessToken, user }
     })
     .finally(() => {
       refreshPromise = null

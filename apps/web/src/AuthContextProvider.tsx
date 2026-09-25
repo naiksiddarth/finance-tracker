@@ -1,34 +1,16 @@
-import { createContext, useEffect, useState, type ReactNode } from "react"
+import { useEffect, useState, type ReactNode } from "react"
 
 import { apiRequest, setAccessToken, refreshAccessToken } from "@/api/client"
 import { ApiError } from "@/api/api-error"
-
-interface User {
-  _id: string
-  username: string
-  email: string
-}
-
-interface AuthContextValues {
-  user: User | null
-  isAuthenticated: boolean
-  isLoading: boolean
-  login: (credentials: LoginCredentials) => Promise<void>
-  logout: () => Promise<void>
-}
-
-interface LoginCredentials {
-  email?: string
-  username?: string
-  password: string
-}
+import { Currency } from "@finance-tracker/shared/constants/transactions"
+import { AuthContext, type LoginCredentials, type User } from "@/auth-context"
 
 interface LoginResponse {
-  accessToken: string
-  user: User
+  data: {
+    accessToken: string
+    userWithoutPassword: User
+  }
 }
-
-export const AuthContext = createContext<AuthContextValues | null>(null)
 
 export function AuthContextProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
@@ -61,8 +43,8 @@ export function AuthContextProvider({ children }: { children: ReactNode }) {
         method: "POST",
         body: JSON.stringify(credentials),
       })
-      setUser(res.user)
-      setAccessToken(res.accessToken)
+      setUser(res.data.userWithoutPassword)
+      setAccessToken(res.data.accessToken)
     } catch (err: unknown) {
       if (err instanceof ApiError) {
         throw err
@@ -84,7 +66,14 @@ export function AuthContextProvider({ children }: { children: ReactNode }) {
 
   return (
     <AuthContext.Provider
-      value={{ user, isAuthenticated: user !== null, isLoading, login, logout }}
+      value={{
+        user,
+        currency: user?.currency ?? Currency.USD,
+        isAuthenticated: user !== null,
+        isLoading,
+        login,
+        logout,
+      }}
     >
       {isInitialized && children}
     </AuthContext.Provider>
