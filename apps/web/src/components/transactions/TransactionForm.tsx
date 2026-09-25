@@ -2,6 +2,7 @@ import * as React from "react"
 import { format } from "date-fns"
 import { CalendarIcon, Clock, Check, Trash2 } from "lucide-react"
 import { cn } from "@workspace/ui/lib/utils"
+import { apiRequest } from "@/api/client"
 
 import { Button } from "@workspace/ui/components/button"
 import { Input } from "@workspace/ui/components/input"
@@ -32,9 +33,10 @@ import { CurrencySymbols } from "@finance-tracker/shared/constants/transactions"
 export interface TransactionFormProps {
   mode: "add" | "edit"
   onClose?: () => void
+  transactionId?: string
 }
 
-export function TransactionForm({ mode, onClose }: TransactionFormProps) {
+export function TransactionForm({ mode, onClose, transactionId }: TransactionFormProps) {
   const { currency } = useAuth()
   const [type, setType] = React.useState<TransactionType>(
     mode === "edit" ? "expense" : "expense"
@@ -42,6 +44,94 @@ export function TransactionForm({ mode, onClose }: TransactionFormProps) {
   const [date, setDate] = React.useState<Date | undefined>(new Date())
   const [time, setTime] = React.useState("14:30")
   const [amount, setAmount] = React.useState(mode === "edit" ? "86.40" : "")
+  const [loading, setLoading] = React.useState(false)
+
+  const combineDateTime = () => {
+    if (!date) return new Date().toISOString()
+    const [hours, minutes] = time.split(":").map(Number)
+    const newDate = new Date(date)
+    newDate.setHours(hours || 0, minutes || 0, 0, 0)
+    return newDate.toISOString()
+  }
+
+  const handleAddTransaction = async () => {
+    if (!amount) return
+    setLoading(true)
+    try {
+      await apiRequest("/transaction", {
+        method: "POST",
+        body: JSON.stringify({
+          amount: Number(amount),
+          type: type === "expense" ? "debit" : "credit",
+          date: combineDateTime(),
+        }),
+      })
+      onClose?.()
+    } catch (error) {
+      console.error(error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleSaveAndAddAnother = async () => {
+    if (!amount) return
+    setLoading(true)
+    try {
+      await apiRequest("/transaction", {
+        method: "POST",
+        body: JSON.stringify({
+          amount: Number(amount),
+          type: type === "expense" ? "debit" : "credit",
+          date: combineDateTime(),
+        }),
+      })
+      setAmount("")
+      setDate(new Date())
+    } catch (error) {
+      console.error(error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleUpdateTransaction = async () => {
+    if (!amount || !transactionId) return
+    setLoading(true)
+    try {
+      await apiRequest("/transaction", {
+        method: "PUT",
+        body: JSON.stringify({
+          _id: transactionId,
+          amount: Number(amount),
+          date: combineDateTime(),
+        }),
+      })
+      onClose?.()
+    } catch (error) {
+      console.error(error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleDeleteTransaction = async () => {
+    if (!transactionId) return
+    setLoading(true)
+    try {
+      await apiRequest("/transaction", {
+        method: "DELETE",
+        body: JSON.stringify({
+          _id: transactionId,
+        }),
+      })
+      onClose?.()
+    } catch (error) {
+      console.error(error)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   return (
     <div className="flex flex-col gap-6 py-2">
@@ -217,8 +307,9 @@ export function TransactionForm({ mode, onClose }: TransactionFormProps) {
           <>
             <Button
               variant="outline"
-              onClick={onClose}
+              onClick={handleSaveAndAddAnother}
               className="border-border"
+              disabled={loading}
             >
               Save & Add Another
             </Button>
@@ -227,10 +318,11 @@ export function TransactionForm({ mode, onClose }: TransactionFormProps) {
                 variant="ghost"
                 className="flex-1 sm:flex-none"
                 onClick={onClose}
+                disabled={loading}
               >
                 Cancel
               </Button>
-              <Button className="flex-1 sm:flex-none">
+              <Button className="flex-1 sm:flex-none" onClick={handleAddTransaction} disabled={loading}>
                 <Check className="mr-2 h-4 w-4" /> Save Transaction
               </Button>
             </div>
@@ -240,7 +332,8 @@ export function TransactionForm({ mode, onClose }: TransactionFormProps) {
             <Button
               variant="outline"
               className="border-destructive/20 text-destructive hover:bg-destructive/10 hover:text-destructive"
-              onClick={onClose}
+              onClick={handleDeleteTransaction}
+              disabled={loading}
             >
               <Trash2 className="mr-2 h-4 w-4" /> Delete Transaction
             </Button>
@@ -249,10 +342,11 @@ export function TransactionForm({ mode, onClose }: TransactionFormProps) {
                 variant="ghost"
                 className="flex-1 sm:flex-none"
                 onClick={onClose}
+                disabled={loading}
               >
                 Discard Changes
               </Button>
-              <Button className="flex-1 sm:flex-none">
+              <Button className="flex-1 sm:flex-none" onClick={handleUpdateTransaction} disabled={loading}>
                 <Check className="mr-2 h-4 w-4" /> Update Transaction
               </Button>
             </div>
