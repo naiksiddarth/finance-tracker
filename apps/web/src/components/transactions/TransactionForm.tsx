@@ -56,7 +56,7 @@ export function TransactionForm({
     const transactionDate = transaction && new Date(transaction.date)
     return transactionDate
       ? `${String(transactionDate.getHours()).padStart(2, "0")}:${String(transactionDate.getMinutes()).padStart(2, "0")}`
-      : "14:30"
+      : `${String(new Date().getHours()).padStart(2, "0")}:${String(new Date().getMinutes()).padStart(2, "0")}`
   })
   const [amount, setAmount] = React.useState(
     transaction ? String(transaction.amount) : ""

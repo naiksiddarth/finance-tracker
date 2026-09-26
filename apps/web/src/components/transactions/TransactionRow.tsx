@@ -28,7 +28,7 @@ export function TransactionRow({ transaction }: TransactionRowProps) {
         onClick={() => setIsEditModalOpen(true)}
       >
         <TableCell className="p-4 align-top numeric-sm text-muted-foreground">
-          {transaction.date}
+          {transaction.displayDate ?? transaction.date}
         </TableCell>
         <TableCell className="p-4">
           <div className="font-medium text-foreground">

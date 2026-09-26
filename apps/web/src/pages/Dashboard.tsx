@@ -55,10 +55,14 @@ export function Dashboard() {
             .slice(0, 5)
             .map((transaction) => ({
               id: transaction._id,
-              date: new Date(transaction.date).toLocaleDateString("en-US", {
-                month: "short",
-                day: "numeric",
-              }),
+              date: transaction.date,
+              displayDate: new Date(transaction.date).toLocaleDateString(
+                "en-US",
+                {
+                  month: "short",
+                  day: "numeric",
+                }
+              ),
               description:
                 transaction.type === "credit"
                   ? "Income transaction"

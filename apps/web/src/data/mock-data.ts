@@ -3,6 +3,7 @@ import { TransactionType } from "@finance-tracker/shared/constants/transactions"
 export interface Transaction {
   id: string
   date: string
+  displayDate?: string
   description: string
   subtitle?: string
   category: string
