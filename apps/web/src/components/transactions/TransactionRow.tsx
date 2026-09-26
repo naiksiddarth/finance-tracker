@@ -20,7 +20,7 @@ export function TransactionRow({ transaction }: TransactionRowProps) {
   const amountColor = isCredit ? "text-success" : "text-destructive"
 
   const formattedAmount = formatCurrency(transaction.amount, currency)
-
+  console.log(transaction)
   return (
     <>
       <TableRow
@@ -57,6 +57,7 @@ export function TransactionRow({ transaction }: TransactionRowProps) {
         isOpen={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}
         mode="edit"
+        transaction={transaction}
       />
     </>
   )

@@ -29,21 +29,38 @@ import {
 } from "@/components/transactions/TransactionTypeSelector"
 import { useAuth } from "@/hooks/use-auth"
 import { CurrencySymbols } from "@finance-tracker/shared/constants/transactions"
+import type { Transaction } from "@/data/mock-data"
+import { notifyTransactionsChanged } from "@/lib/transactions"
 
 export interface TransactionFormProps {
   mode: "add" | "edit"
   onClose?: () => void
   transactionId?: string
+  transaction?: Transaction
 }
 
-export function TransactionForm({ mode, onClose, transactionId }: TransactionFormProps) {
+export function TransactionForm({
+  mode,
+  onClose,
+  transactionId,
+  transaction,
+}: TransactionFormProps) {
   const { currency } = useAuth()
   const [type, setType] = React.useState<TransactionType>(
-    mode === "edit" ? "expense" : "expense"
+    transaction?.type === "credit" ? "income" : "expense"
   )
-  const [date, setDate] = React.useState<Date | undefined>(new Date())
-  const [time, setTime] = React.useState("14:30")
-  const [amount, setAmount] = React.useState(mode === "edit" ? "86.40" : "")
+  const [date, setDate] = React.useState<Date | undefined>(
+    transaction ? new Date(transaction.date) : new Date()
+  )
+  const [time, setTime] = React.useState(() => {
+    const transactionDate = transaction && new Date(transaction.date)
+    return transactionDate
+      ? `${String(transactionDate.getHours()).padStart(2, "0")}:${String(transactionDate.getMinutes()).padStart(2, "0")}`
+      : "14:30"
+  })
+  const [amount, setAmount] = React.useState(
+    transaction ? String(transaction.amount) : ""
+  )
   const [loading, setLoading] = React.useState(false)
 
   const combineDateTime = () => {
@@ -66,6 +83,7 @@ export function TransactionForm({ mode, onClose, transactionId }: TransactionFor
           date: combineDateTime(),
         }),
       })
+      notifyTransactionsChanged()
       onClose?.()
     } catch (error) {
       console.error(error)
@@ -86,6 +104,7 @@ export function TransactionForm({ mode, onClose, transactionId }: TransactionFor
           date: combineDateTime(),
         }),
       })
+      notifyTransactionsChanged()
       setAmount("")
       setDate(new Date())
     } catch (error) {
@@ -107,6 +126,7 @@ export function TransactionForm({ mode, onClose, transactionId }: TransactionFor
           date: combineDateTime(),
         }),
       })
+      notifyTransactionsChanged()
       onClose?.()
     } catch (error) {
       console.error(error)
@@ -125,6 +145,7 @@ export function TransactionForm({ mode, onClose, transactionId }: TransactionFor
           _id: transactionId,
         }),
       })
+      notifyTransactionsChanged()
       onClose?.()
     } catch (error) {
       console.error(error)
@@ -322,7 +343,11 @@ export function TransactionForm({ mode, onClose, transactionId }: TransactionFor
               >
                 Cancel
               </Button>
-              <Button className="flex-1 sm:flex-none" onClick={handleAddTransaction} disabled={loading}>
+              <Button
+                className="flex-1 sm:flex-none"
+                onClick={handleAddTransaction}
+                disabled={loading}
+              >
                 <Check className="mr-2 h-4 w-4" /> Save Transaction
               </Button>
             </div>
@@ -346,7 +371,11 @@ export function TransactionForm({ mode, onClose, transactionId }: TransactionFor
               >
                 Discard Changes
               </Button>
-              <Button className="flex-1 sm:flex-none" onClick={handleUpdateTransaction} disabled={loading}>
+              <Button
+                className="flex-1 sm:flex-none"
+                onClick={handleUpdateTransaction}
+                disabled={loading}
+              >
                 <Check className="mr-2 h-4 w-4" /> Update Transaction
               </Button>
             </div>

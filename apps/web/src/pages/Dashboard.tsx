@@ -1,3 +1,4 @@
+import * as React from "react"
 import {
   Wallet,
   ArrowDownCircle,
@@ -10,6 +11,9 @@ import { ButtonGroup } from "@workspace/ui/components/button-group"
 import { Card, CardContent } from "@workspace/ui/components/card"
 import { useAuth } from "@/hooks/use-auth"
 import { formatCurrency } from "@/lib/currency"
+import { apiRequest } from "@/api/client"
+import { TRANSACTIONS_CHANGED_EVENT } from "@/lib/transactions"
+import type { Transaction } from "../data/mock-data"
 
 import { MetricCard } from "../components/finance/MetricCard"
 import { IncomeExpenseChart } from "../components/dashboard/IncomeExpenseChart"
@@ -26,6 +30,60 @@ import {
 
 export function Dashboard() {
   const { currency } = useAuth()
+  const [transactions, setTransactions] = React.useState<Transaction[]>([])
+  const [isLoadingTransactions, setIsLoadingTransactions] = React.useState(true)
+
+  React.useEffect(() => {
+    async function loadTransactions() {
+      try {
+        const response = await apiRequest<{
+          data: Array<{
+            _id: string
+            amount: number
+            type: "debit" | "credit"
+            date: string
+          }>
+        }>("/transaction")
+        // console.log(response.data)
+
+        setTransactions(
+          [...response.data]
+            .sort(
+              (first, second) =>
+                new Date(second.date).getTime() - new Date(first.date).getTime()
+            )
+            .slice(0, 5)
+            .map((transaction) => ({
+              id: transaction._id,
+              date: new Date(transaction.date).toLocaleDateString("en-US", {
+                month: "short",
+                day: "numeric",
+              }),
+              description:
+                transaction.type === "credit"
+                  ? "Income transaction"
+                  : "Expense transaction",
+              category: transaction.type === "credit" ? "Income" : "Expense",
+              type: transaction.type,
+              amount: transaction.amount,
+            }))
+        )
+      } catch (error) {
+        console.error("Failed to load transactions", error)
+      } finally {
+        setIsLoadingTransactions(false)
+      }
+    }
+
+    void loadTransactions()
+
+    window.addEventListener(TRANSACTIONS_CHANGED_EVENT, loadTransactions)
+
+    return () => {
+      window.removeEventListener(TRANSACTIONS_CHANGED_EVENT, loadTransactions)
+    }
+  }, [])
+
   const metricIcons = [
     <Wallet key="1" className="h-5 w-5 text-muted-foreground" />,
     <ArrowDownCircle key="2" className="h-5 w-5 text-success" />,
@@ -110,7 +168,11 @@ export function Dashboard() {
         {/* LEFT COLUMN */}
         <div className="space-y-gutter lg:col-span-7">
           <IncomeExpenseChart data={MOCK_CASH_FLOW} weeklyAvg={961.3} />
-          <RecentTransactions transactions={MOCK_TRANSACTIONS} />
+          <RecentTransactions
+            transactions={
+              isLoadingTransactions ? MOCK_TRANSACTIONS : transactions
+            }
+          />
         </div>
 
         {/* RIGHT COLUMN */}

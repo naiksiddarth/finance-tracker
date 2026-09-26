@@ -103,5 +103,5 @@ export {
   getTransactions,
   updateCurrency,
   updateTransactions,
-  deleteTransaction
+  deleteTransaction,
 }
