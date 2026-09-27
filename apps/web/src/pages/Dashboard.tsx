@@ -22,16 +22,47 @@ import { SpendingByCategory } from "../components/dashboard/SpendingByCategory"
 import { BudgetSnapshot } from "../components/dashboard/BudgetSnapshot"
 import {
   MOCK_TRANSACTIONS,
-  MOCK_METRICS,
   MOCK_CATEGORY_SPENDING,
   MOCK_BUDGET_SNAPSHOT,
   MOCK_CASH_FLOW,
 } from "../data/mock-data"
 
+interface DashboardMetrics {
+  income: number
+  expense: number
+  netCashFlow: number
+  totalBalance: number
+}
+
 export function Dashboard() {
   const { currency } = useAuth()
   const [transactions, setTransactions] = React.useState<Transaction[]>([])
   const [isLoadingTransactions, setIsLoadingTransactions] = React.useState(true)
+  const [metrics, setMetrics] = React.useState<DashboardMetrics | null>(null)
+  const [isLoadingMetrics, setIsLoadingMetrics] = React.useState(true)
+
+  React.useEffect(() => {
+    async function loadMetrics() {
+      try {
+        const response = await apiRequest<{ data: DashboardMetrics }>(
+          "/metrics"
+        )
+        setMetrics(response.data)
+      } catch (error) {
+        console.error("Failed to load metrics", error)
+      } finally {
+        setIsLoadingMetrics(false)
+      }
+    }
+
+    void loadMetrics()
+
+    window.addEventListener(TRANSACTIONS_CHANGED_EVENT, loadMetrics)
+
+    return () => {
+      window.removeEventListener(TRANSACTIONS_CHANGED_EVENT, loadMetrics)
+    }
+  }, [])
 
   React.useEffect(() => {
     async function loadTransactions() {
@@ -95,6 +126,40 @@ export function Dashboard() {
     <PiggyBank key="4" className="h-5 w-5 text-muted-foreground" />,
   ]
 
+  const metricCards = [
+    {
+      title: "Total Balance",
+      value: metrics?.totalBalance,
+      trend: "up" as const,
+      trendValue: undefined,
+      subtitle: "across all transactions",
+    },
+    {
+      title: "Total Income",
+      value: metrics?.income,
+      trend: undefined,
+      trendValue: undefined,
+      subtitle: "this month",
+    },
+    {
+      title: "Total Expenses",
+      value: metrics?.expense,
+      trend: undefined,
+      trendValue: undefined,
+      subtitle: "this month",
+    },
+    {
+      title: "Net Cash Flow",
+      value: metrics?.netCashFlow,
+      trend:
+        metrics && metrics.netCashFlow >= 0
+          ? ("up" as const)
+          : ("down" as const),
+      trendValue: undefined,
+      subtitle: "this month",
+    },
+  ]
+
   return (
     <div className="flex flex-col gap-6">
       {/* PAGE HEADER ROW */}
@@ -135,7 +200,7 @@ export function Dashboard() {
 
       {/* TOP METRIC CARDS */}
       <section className="my-6 grid grid-cols-1 gap-gutter sm:grid-cols-2 lg:grid-cols-4">
-        {MOCK_METRICS.map((metric, index) => {
+        {metricCards.map((metric, index) => {
           let iconContainerClass = ""
           let valueClass = ""
 
@@ -155,7 +220,11 @@ export function Dashboard() {
             <MetricCard
               key={index}
               title={metric.title}
-              value={`${index === 1 || index === 3 ? "+" : ""}${formatCurrency(metric.value as number, currency)}`}
+              value={
+                isLoadingMetrics || metric.value === undefined
+                  ? "..."
+                  : formatCurrency(metric.value, currency)
+              }
               trend={metric.trend}
               trendValue={metric.trendValue}
               subtitle={metric.subtitle}
