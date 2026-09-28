@@ -27,6 +27,21 @@ function isCompleteMonth(startDate: Date, endDate: Date) {
   )
 }
 
+async function getTotalBalance(userId: mongoose.Types.ObjectId) {
+  const [balanceResult] = await Metric.aggregate<{ totalBalance: number }>([
+    { $match: { user: userId } },
+    {
+      $group: {
+        _id: null,
+        totalBalance: { $sum: "$netCashFlow" },
+      },
+    },
+    { $project: { _id: 0, totalBalance: 1 } },
+  ])
+
+  return balanceResult?.totalBalance ?? 0
+}
+
 const getMetrics = asyncHandler(async (req, res) => {
   const userId = new mongoose.Types.ObjectId(req.user!._id)
   const { startDate, endDate } = MetricsQuerySchema.parse(req.query)
@@ -36,10 +51,13 @@ const getMetrics = asyncHandler(async (req, res) => {
     const endAt = toUtcDate(endDate)
 
     if (isCompleteMonth(startAt, endAt)) {
-      const metric = await Metric.findOne({
-        user: userId,
-        month: startAt,
-      }).lean()
+      const [metric, totalBalance] = await Promise.all([
+        Metric.findOne({
+          user: userId,
+          month: startAt,
+        }).lean(),
+        getTotalBalance(userId),
+      ])
 
       return res.status(200).json(
         new ApiResponse(
@@ -48,7 +66,7 @@ const getMetrics = asyncHandler(async (req, res) => {
             income: metric?.income ?? 0,
             expense: metric?.expense ?? 0,
             netCashFlow: metric?.netCashFlow ?? 0,
-            totalBalance: metric?.netCashFlow ?? 0,
+            totalBalance,
           },
           "Metrics fetched successfully"
         )
@@ -56,43 +74,47 @@ const getMetrics = asyncHandler(async (req, res) => {
     }
 
     const endExclusive = getNextDay(endAt)
-    const [rangeMetrics] = await Transaction.aggregate<{
-      income: number
-      expense: number
-      netCashFlow: number
-    }>([
-      {
-        $match: {
-          user: userId,
-          date: { $gte: startAt, $lt: endExclusive },
-        },
-      },
-      {
-        $group: {
-          _id: null,
-          income: {
-            $sum: {
-              $cond: [{ $eq: ["$type", "credit"] }, "$amount", 0],
-            },
-          },
-          expense: {
-            $sum: {
-              $cond: [{ $eq: ["$type", "debit"] }, "$amount", 0],
-            },
-          },
-          netCashFlow: {
-            $sum: {
-              $cond: [
-                { $eq: ["$type", "credit"] },
-                "$amount",
-                { $multiply: ["$amount", -1] },
-              ],
-            },
+    const [rangeResults, totalBalance] = await Promise.all([
+      Transaction.aggregate<{
+        income: number
+        expense: number
+        netCashFlow: number
+      }>([
+        {
+          $match: {
+            user: userId,
+            date: { $gte: startAt, $lt: endExclusive },
           },
         },
-      },
-      { $project: { _id: 0, income: 1, expense: 1, netCashFlow: 1 } },
+        {
+          $group: {
+            _id: null,
+            income: {
+              $sum: {
+                $cond: [{ $eq: ["$type", "credit"] }, "$amount", 0],
+              },
+            },
+            expense: {
+              $sum: {
+                $cond: [{ $eq: ["$type", "debit"] }, "$amount", 0],
+              },
+            },
+            netCashFlow: {
+              $sum: {
+                $cond: [
+                  { $eq: ["$type", "credit"] },
+                  "$amount",
+                  { $multiply: ["$amount", -1] },
+                ],
+              },
+            },
+          },
+        },
+        { $project: { _id: 0, income: 1, expense: 1, netCashFlow: 1 } },
+      ]),
+      getTotalBalance(userId),
     ])
+    const rangeMetrics = rangeResults[0]
 
     return res.status(200).json(
       new ApiResponse(
@@ -101,7 +123,7 @@ const getMetrics = asyncHandler(async (req, res) => {
           income: rangeMetrics?.income ?? 0,
           expense: rangeMetrics?.expense ?? 0,
           netCashFlow: rangeMetrics?.netCashFlow ?? 0,
-          totalBalance: rangeMetrics?.netCashFlow ?? 0,
+          totalBalance,
         },
         "Metrics fetched successfully"
       )
@@ -113,18 +135,9 @@ const getMetrics = asyncHandler(async (req, res) => {
     Date.UTC(currentDate.getUTCFullYear(), currentDate.getUTCMonth(), 1)
   )
 
-  const [currentMetric, balanceResult] = await Promise.all([
+  const [currentMetric, totalBalance] = await Promise.all([
     Metric.findOne({ user: userId, month: currentMonth }).lean(),
-    Metric.aggregate<{ totalBalance: number }>([
-      { $match: { user: userId } },
-      {
-        $group: {
-          _id: null,
-          totalBalance: { $sum: "$netCashFlow" },
-        },
-      },
-      { $project: { _id: 0, totalBalance: 1 } },
-    ]),
+    getTotalBalance(userId),
   ])
 
   res.status(200).json(
@@ -134,7 +147,7 @@ const getMetrics = asyncHandler(async (req, res) => {
         income: currentMetric?.income ?? 0,
         expense: currentMetric?.expense ?? 0,
         netCashFlow: currentMetric?.netCashFlow ?? 0,
-        totalBalance: balanceResult[0]?.totalBalance ?? 0,
+        totalBalance,
       },
       "Metrics fetched successfully"
     )

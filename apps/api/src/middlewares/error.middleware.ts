@@ -45,7 +45,7 @@ function handleError(
     data = err.issues.map((issue) => ({
       path: issue.path,
       code: issue.message,
-      message: ERROR_MESSAGES[issue.message as ErrorCode]
+      message: ERROR_MESSAGES[issue.message as ErrorCode],
     }))
   }
 
