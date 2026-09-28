@@ -8,6 +8,7 @@
   "main": "./src/index.ts",
   "types": "./src/index.ts",
   "exports": {
+    "./metrics": "./src/metrics.ts",
     "./*": "./src/*.ts"
   },
   "scripts": {

@@ -34,18 +34,64 @@ interface DashboardMetrics {
   totalBalance: number
 }
 
+interface DateRange {
+  startDate: string
+  endDate: string
+}
+
+function formatQueryDate(date: Date) {
+  return date.toISOString().slice(0, 10)
+}
+
+function getThisMonthRange(date = new Date()): DateRange {
+  return {
+    startDate: formatQueryDate(
+      new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), 1))
+    ),
+    endDate: formatQueryDate(date),
+  }
+}
+
+function getDateRange(period: "thisMonth" | "last30Days" | "yearToDate") {
+  const today = new Date()
+  const endDate = formatQueryDate(today)
+
+  if (period === "last30Days") {
+    const startDate = new Date(today)
+    startDate.setUTCDate(startDate.getUTCDate() - 29)
+    return { startDate: formatQueryDate(startDate), endDate }
+  }
+
+  if (period === "yearToDate") {
+    return {
+      startDate: `${today.getUTCFullYear()}-01-01`,
+      endDate,
+    }
+  }
+
+  return getThisMonthRange(today)
+}
+
 export function Dashboard() {
   const { currency } = useAuth()
   const [transactions, setTransactions] = React.useState<Transaction[]>([])
   const [isLoadingTransactions, setIsLoadingTransactions] = React.useState(true)
   const [metrics, setMetrics] = React.useState<DashboardMetrics | null>(null)
   const [isLoadingMetrics, setIsLoadingMetrics] = React.useState(true)
+  const [selectedPeriod, setSelectedPeriod] = React.useState<
+    "thisMonth" | "last30Days" | "yearToDate"
+  >("thisMonth")
+  const [dateRange, setDateRange] = React.useState<DateRange>(() =>
+    getDateRange("thisMonth")
+  )
 
   React.useEffect(() => {
     async function loadMetrics() {
       try {
+        setIsLoadingMetrics(true)
+        const query = new URLSearchParams(dateRange)
         const response = await apiRequest<{ data: DashboardMetrics }>(
-          "/metrics"
+          `/metrics?${query.toString()}`
         )
         setMetrics(response.data)
       } catch (error) {
@@ -62,7 +108,7 @@ export function Dashboard() {
     return () => {
       window.removeEventListener(TRANSACTIONS_CHANGED_EVENT, loadMetrics)
     }
-  }, [])
+  }, [dateRange])
 
   React.useEffect(() => {
     async function loadTransactions() {
@@ -174,23 +220,35 @@ export function Dashboard() {
           {/* Date Range Filter Pill Group */}
           <ButtonGroup className="inline-flex items-center gap-1 rounded-lg border border-border bg-card p-0.5 *:data-[slot=button]:rounded-md!">
             <Button
-              variant="default"
+              variant={selectedPeriod === "thisMonth" ? "default" : "ghost"}
               size="sm"
               className="h-7 rounded-md px-3 label-md"
+              onClick={() => {
+                setSelectedPeriod("thisMonth")
+                setDateRange(getDateRange("thisMonth"))
+              }}
             >
               This Month
             </Button>
             <Button
-              variant="ghost"
+              variant={selectedPeriod === "last30Days" ? "default" : "ghost"}
               size="sm"
               className="h-7 rounded-md px-3 label-md text-muted-foreground"
+              onClick={() => {
+                setSelectedPeriod("last30Days")
+                setDateRange(getDateRange("last30Days"))
+              }}
             >
               Last 30 Days
             </Button>
             <Button
-              variant="ghost"
+              variant={selectedPeriod === "yearToDate" ? "default" : "ghost"}
               size="sm"
               className="h-7 rounded-md px-3 label-md text-muted-foreground"
+              onClick={() => {
+                setSelectedPeriod("yearToDate")
+                setDateRange(getDateRange("yearToDate"))
+              }}
             >
               Year to Date
             </Button>
