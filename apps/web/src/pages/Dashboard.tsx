@@ -222,7 +222,11 @@ export function Dashboard() {
             <Button
               variant={selectedPeriod === "thisMonth" ? "default" : "ghost"}
               size="sm"
-              className="h-7 rounded-md px-3 label-md"
+              className={`h-7 rounded-md px-3 label-md ${
+                selectedPeriod === "thisMonth"
+                  ? "text-primary-foreground"
+                  : "text-muted-foreground"
+              }`}
               onClick={() => {
                 setSelectedPeriod("thisMonth")
                 setDateRange(getDateRange("thisMonth"))
@@ -233,7 +237,11 @@ export function Dashboard() {
             <Button
               variant={selectedPeriod === "last30Days" ? "default" : "ghost"}
               size="sm"
-              className="h-7 rounded-md px-3 label-md text-muted-foreground"
+              className={`h-7 rounded-md px-3 label-md ${
+                selectedPeriod === "last30Days"
+                  ? "text-primary-foreground"
+                  : "text-muted-foreground"
+              }`}
               onClick={() => {
                 setSelectedPeriod("last30Days")
                 setDateRange(getDateRange("last30Days"))
@@ -244,7 +252,11 @@ export function Dashboard() {
             <Button
               variant={selectedPeriod === "yearToDate" ? "default" : "ghost"}
               size="sm"
-              className="h-7 rounded-md px-3 label-md text-muted-foreground"
+              className={`h-7 rounded-md px-3 label-md ${
+                selectedPeriod === "yearToDate"
+                  ? "text-primary-foreground"
+                  : "text-muted-foreground"
+              }`}
               onClick={() => {
                 setSelectedPeriod("yearToDate")
                 setDateRange(getDateRange("yearToDate"))
