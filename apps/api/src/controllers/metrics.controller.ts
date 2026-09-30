@@ -37,6 +37,15 @@ interface WeeklySummary {
   netCashFlow: number
 }
 
+interface CashFlowSummary {
+  label: string
+  income: number
+  expense: number
+  netCashFlow: number
+}
+
+type SummaryPeriod = "week" | "month"
+
 function getWeekCount(startDate: Date, endDate: Date) {
   const dayCount =
     Math.floor((endDate.getTime() - startDate.getTime()) / 86_400_000) + 1
@@ -68,6 +77,172 @@ function normalizeWeeklySummary(
       }
     }
   )
+}
+
+function getMonthKey(date: Date) {
+  return `${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, "0")}`
+}
+
+function getMonthCount(startDate: Date, endDate: Date) {
+  return (
+    (endDate.getUTCFullYear() - startDate.getUTCFullYear()) * 12 +
+    endDate.getUTCMonth() -
+    startDate.getUTCMonth() +
+    1
+  )
+}
+
+function normalizeMonthlySummary(
+  startDate: Date,
+  endDate: Date,
+  summaries: Array<{
+    month: string
+    income: number
+    expense: number
+    netCashFlow: number
+  }> = []
+) {
+  const summaryByMonth = new Map(
+    summaries.map((summary) => [summary.month, summary])
+  )
+  const firstMonth = new Date(
+    Date.UTC(startDate.getUTCFullYear(), startDate.getUTCMonth(), 1)
+  )
+
+  return Array.from(
+    { length: getMonthCount(startDate, endDate) },
+    (_, index) => {
+      const month = new Date(
+        Date.UTC(
+          firstMonth.getUTCFullYear(),
+          firstMonth.getUTCMonth() + index,
+          1
+        )
+      )
+      const summary = summaryByMonth.get(getMonthKey(month))
+
+      return {
+        label: month.toLocaleDateString("en-US", {
+          month: "short",
+          year: "numeric",
+          timeZone: "UTC",
+        }),
+        income: summary?.income ?? 0,
+        expense: summary?.expense ?? 0,
+        netCashFlow: summary?.netCashFlow ?? 0,
+      }
+    }
+  )
+}
+
+function shouldUseMonthlySummary(startDate: Date, endDate: Date) {
+  return getWeekCount(startDate, endDate) > 5
+}
+
+async function getRangeCashFlowSummary(
+  userId: mongoose.Types.ObjectId,
+  startDate: Date,
+  endDate: Date
+) {
+  const period: SummaryPeriod = shouldUseMonthlySummary(startDate, endDate)
+    ? "month"
+    : "week"
+  const groupId =
+    period === "month"
+      ? {
+          $dateToString: {
+            format: "%Y-%m",
+            date: "$date",
+            timezone: "UTC",
+          },
+        }
+      : {
+          $add: [
+            {
+              $floor: {
+                $divide: [
+                  {
+                    $dateDiff: {
+                      startDate,
+                      endDate: "$date",
+                      unit: "day",
+                      timezone: "UTC",
+                    },
+                  },
+                  7,
+                ],
+              },
+            },
+            1,
+          ],
+        }
+  const results = await Transaction.aggregate<{
+    _id: string | number
+    income: number
+    expense: number
+    netCashFlow: number
+  }>([
+    {
+      $match: {
+        user: userId,
+        date: { $gte: startDate, $lt: getNextDay(endDate) },
+      },
+    },
+    {
+      $group: {
+        _id: groupId,
+        income: {
+          $sum: {
+            $cond: [{ $eq: ["$type", "credit"] }, "$amount", 0],
+          },
+        },
+        expense: {
+          $sum: {
+            $cond: [{ $eq: ["$type", "debit"] }, "$amount", 0],
+          },
+        },
+        netCashFlow: {
+          $sum: {
+            $cond: [
+              { $eq: ["$type", "credit"] },
+              "$amount",
+              { $multiply: ["$amount", -1] },
+            ],
+          },
+        },
+      },
+    },
+  ])
+
+  const summary =
+    period === "month"
+      ? normalizeMonthlySummary(
+          startDate,
+          endDate,
+          results.map(({ _id, income, expense, netCashFlow }) => ({
+            month: String(_id),
+            income,
+            expense,
+            netCashFlow,
+          }))
+        )
+      : normalizeWeeklySummary(
+          startDate,
+          endDate,
+          results.map(({ _id, income, expense, netCashFlow }) => ({
+            week: Number(_id),
+            income,
+            expense,
+            netCashFlow,
+          }))
+        ).map(({ label, income, expense, netCashFlow }) => ({
+          label,
+          income,
+          expense,
+          netCashFlow,
+        }))
+
+  return { period, summary }
 }
 
 async function getTotalBalance(userId: mongoose.Types.ObjectId) {
@@ -105,7 +280,12 @@ const getMetrics = asyncHandler(async (req, res) => {
         startAt,
         endAt,
         metric?.weeklySummary
-      )
+      ).map(({ label, income, expense, netCashFlow }) => ({
+        label,
+        income,
+        expense,
+        netCashFlow,
+      }))
 
       return res.status(200).json(
         new ApiResponse(
@@ -115,89 +295,21 @@ const getMetrics = asyncHandler(async (req, res) => {
             expense: metric?.expense ?? 0,
             netCashFlow: metric?.netCashFlow ?? 0,
             totalBalance,
-            weeklySummary,
+            cashFlowSummary: {
+              period: "week",
+              summary: weeklySummary,
+            },
           },
           "Metrics fetched successfully"
         )
       )
     }
 
-    const endExclusive = getNextDay(endAt)
-    const [rangeResults, totalBalance] = await Promise.all([
-      Transaction.aggregate<{
-        _id: number
-        income: number
-        expense: number
-        netCashFlow: number
-      }>([
-        {
-          $match: {
-            user: userId,
-            date: { $gte: startAt, $lt: endExclusive },
-          },
-        },
-        {
-          $addFields: {
-            week: {
-              $add: [
-                {
-                  $floor: {
-                    $divide: [
-                      {
-                        $dateDiff: {
-                          startDate: startAt,
-                          endDate: "$date",
-                          unit: "day",
-                          timezone: "UTC",
-                        },
-                      },
-                      7,
-                    ],
-                  },
-                },
-                1,
-              ],
-            },
-          },
-        },
-        {
-          $group: {
-            _id: "$week",
-            income: {
-              $sum: {
-                $cond: [{ $eq: ["$type", "credit"] }, "$amount", 0],
-              },
-            },
-            expense: {
-              $sum: {
-                $cond: [{ $eq: ["$type", "debit"] }, "$amount", 0],
-              },
-            },
-            netCashFlow: {
-              $sum: {
-                $cond: [
-                  { $eq: ["$type", "credit"] },
-                  "$amount",
-                  { $multiply: ["$amount", -1] },
-                ],
-              },
-            },
-          },
-        },
-      ]),
+    const [cashFlowSummary, totalBalance] = await Promise.all([
+      getRangeCashFlowSummary(userId, startAt, endAt),
       getTotalBalance(userId),
     ])
-    const weeklySummary = normalizeWeeklySummary(
-      startAt,
-      endAt,
-      rangeResults.map(({ _id, income, expense, netCashFlow }) => ({
-        week: _id,
-        income,
-        expense,
-        netCashFlow,
-      }))
-    )
-    const rangeMetrics = weeklySummary.reduce(
+    const rangeMetrics = cashFlowSummary.summary.reduce(
       (totals, summary) => ({
         income: totals.income + summary.income,
         expense: totals.expense + summary.expense,
@@ -214,7 +326,7 @@ const getMetrics = asyncHandler(async (req, res) => {
           expense: rangeMetrics?.expense ?? 0,
           netCashFlow: rangeMetrics?.netCashFlow ?? 0,
           totalBalance,
-          weeklySummary,
+          cashFlowSummary,
         },
         "Metrics fetched successfully"
       )
@@ -242,17 +354,25 @@ const getMetrics = asyncHandler(async (req, res) => {
         expense: currentMetric?.expense ?? 0,
         netCashFlow: currentMetric?.netCashFlow ?? 0,
         totalBalance,
-        weeklySummary: normalizeWeeklySummary(
-          currentMonth,
-          new Date(
-            Date.UTC(
-              currentMonth.getUTCFullYear(),
-              currentMonth.getUTCMonth() + 1,
-              0
-            )
-          ),
-          currentMetric?.weeklySummary
-        ),
+        cashFlowSummary: {
+          period: "week",
+          summary: normalizeWeeklySummary(
+            currentMonth,
+            new Date(
+              Date.UTC(
+                currentMonth.getUTCFullYear(),
+                currentMonth.getUTCMonth() + 1,
+                0
+              )
+            ),
+            currentMetric?.weeklySummary
+          ).map(({ label, income, expense, netCashFlow }) => ({
+            label,
+            income,
+            expense,
+            netCashFlow,
+          })),
+        },
       },
       "Metrics fetched successfully"
     )

@@ -17,11 +17,13 @@ interface IncomeExpenseChartProps {
     income: number
     expense: number
   }[]
+  period: "week" | "month"
   weeklyAvg: number
 }
 
 export function IncomeExpenseChart({
   data,
+  period,
   weeklyAvg,
 }: IncomeExpenseChartProps) {
   const { currency } = useAuth()
@@ -35,7 +37,8 @@ export function IncomeExpenseChart({
             Income vs. Expenses
           </h2>
           <p className="body-sm text-muted-foreground">
-            Weekly income and expense comparison
+            {period === "month" ? "Monthly" : "Weekly"} income and expense
+            comparison
           </p>
         </div>
         <div className="flex items-center gap-4">
@@ -109,7 +112,7 @@ export function IncomeExpenseChart({
 
         <div className="mt-4 flex flex-wrap items-center justify-between gap-4 border-t border-border pt-4 body-sm text-muted-foreground">
           <span>
-            Weekly avg. spend:{" "}
+            {period === "month" ? "Monthly" : "Weekly"} avg. spend:{" "}
             <strong className="numeric-sm text-foreground">
               {formattedWeeklyAvg}
             </strong>

@@ -31,13 +31,15 @@ interface DashboardMetrics {
   expense: number
   netCashFlow: number
   totalBalance: number
-  weeklySummary: {
-    week: number
-    label: string
-    income: number
-    expense: number
-    netCashFlow: number
-  }[]
+  cashFlowSummary: {
+    period: "week" | "month"
+    summary: {
+      label: string
+      income: number
+      expense: number
+      netCashFlow: number
+    }[]
+  }
 }
 
 interface DateRange {
@@ -213,9 +215,15 @@ export function Dashboard() {
   ]
 
   const weeklySummary = metrics?.weeklySummary ?? []
-  const weeklyAverageExpense = weeklySummary.length
-    ? weeklySummary.reduce((total, summary) => total + summary.expense, 0) /
-      weeklySummary.length
+  const cashFlowSummary = metrics?.cashFlowSummary ?? {
+    period: "week" as const,
+    summary: [],
+  }
+  const averageExpense = cashFlowSummary.summary.length
+    ? cashFlowSummary.summary.reduce(
+        (total, summary) => total + summary.expense,
+        0
+      ) / cashFlowSummary.summary.length
     : 0
 
   return (
@@ -323,8 +331,9 @@ export function Dashboard() {
         {/* LEFT COLUMN */}
         <div className="space-y-gutter lg:col-span-7">
           <IncomeExpenseChart
-            data={weeklySummary}
-            weeklyAvg={weeklyAverageExpense}
+            data={cashFlowSummary.summary}
+            period={cashFlowSummary.period}
+            weeklyAvg={averageExpense}
           />
           <RecentTransactions
             transactions={
