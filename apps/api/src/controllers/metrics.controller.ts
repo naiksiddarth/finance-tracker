@@ -1,6 +1,9 @@
 import mongoose from "mongoose"
 import { Metric } from "@finance-tracker/db/metrics"
-import { Transaction } from "@finance-tracker/db/transaction"
+import {
+  calculateMetricForMonth,
+  Transaction,
+} from "@finance-tracker/db/transaction"
 import { MetricsQuerySchema } from "@finance-tracker/validation/metrics"
 import { asyncHandler } from "../utils/async-handler.ts"
 import { ApiResponse } from "../utils/api-response.ts"
@@ -24,6 +27,46 @@ function isCompleteMonth(startDate: Date, endDate: Date) {
       new Date(
         Date.UTC(startDate.getUTCFullYear(), startDate.getUTCMonth() + 1, 0)
       ).getUTCDate()
+  )
+}
+
+interface WeeklySummary {
+  week: number
+  income: number
+  expense: number
+  netCashFlow: number
+}
+
+function getWeekCount(startDate: Date, endDate: Date) {
+  const dayCount =
+    Math.floor((endDate.getTime() - startDate.getTime()) / 86_400_000) + 1
+
+  return Math.ceil(dayCount / 7)
+}
+
+function normalizeWeeklySummary(
+  startDate: Date,
+  endDate: Date,
+  summaries: WeeklySummary[] = []
+) {
+  const summaryByWeek = new Map(
+    summaries.map((summary) => [summary.week, summary])
+  )
+
+  return Array.from(
+    { length: getWeekCount(startDate, endDate) },
+    (_, index) => {
+      const week = index + 1
+      const summary = summaryByWeek.get(week)
+
+      return {
+        week,
+        label: `Week ${week}`,
+        income: summary?.income ?? 0,
+        expense: summary?.expense ?? 0,
+        netCashFlow: summary?.netCashFlow ?? 0,
+      }
+    }
   )
 }
 
@@ -51,13 +94,18 @@ const getMetrics = asyncHandler(async (req, res) => {
     const endAt = toUtcDate(endDate)
 
     if (isCompleteMonth(startAt, endAt)) {
-      const [metric, totalBalance] = await Promise.all([
-        Metric.findOne({
-          user: userId,
-          month: startAt,
-        }).lean(),
-        getTotalBalance(userId),
-      ])
+      const storedMetric = await Metric.findOne({
+        user: userId,
+        month: startAt,
+      }).lean()
+      const metric =
+        storedMetric ?? (await calculateMetricForMonth(userId, startAt))
+      const totalBalance = await getTotalBalance(userId)
+      const weeklySummary = normalizeWeeklySummary(
+        startAt,
+        endAt,
+        metric?.weeklySummary
+      )
 
       return res.status(200).json(
         new ApiResponse(
@@ -67,6 +115,7 @@ const getMetrics = asyncHandler(async (req, res) => {
             expense: metric?.expense ?? 0,
             netCashFlow: metric?.netCashFlow ?? 0,
             totalBalance,
+            weeklySummary,
           },
           "Metrics fetched successfully"
         )
@@ -76,6 +125,7 @@ const getMetrics = asyncHandler(async (req, res) => {
     const endExclusive = getNextDay(endAt)
     const [rangeResults, totalBalance] = await Promise.all([
       Transaction.aggregate<{
+        _id: number
         income: number
         expense: number
         netCashFlow: number
@@ -87,8 +137,32 @@ const getMetrics = asyncHandler(async (req, res) => {
           },
         },
         {
+          $addFields: {
+            week: {
+              $add: [
+                {
+                  $floor: {
+                    $divide: [
+                      {
+                        $dateDiff: {
+                          startDate: startAt,
+                          endDate: "$date",
+                          unit: "day",
+                          timezone: "UTC",
+                        },
+                      },
+                      7,
+                    ],
+                  },
+                },
+                1,
+              ],
+            },
+          },
+        },
+        {
           $group: {
-            _id: null,
+            _id: "$week",
             income: {
               $sum: {
                 $cond: [{ $eq: ["$type", "credit"] }, "$amount", 0],
@@ -110,11 +184,27 @@ const getMetrics = asyncHandler(async (req, res) => {
             },
           },
         },
-        { $project: { _id: 0, income: 1, expense: 1, netCashFlow: 1 } },
       ]),
       getTotalBalance(userId),
     ])
-    const rangeMetrics = rangeResults[0]
+    const weeklySummary = normalizeWeeklySummary(
+      startAt,
+      endAt,
+      rangeResults.map(({ _id, income, expense, netCashFlow }) => ({
+        week: _id,
+        income,
+        expense,
+        netCashFlow,
+      }))
+    )
+    const rangeMetrics = weeklySummary.reduce(
+      (totals, summary) => ({
+        income: totals.income + summary.income,
+        expense: totals.expense + summary.expense,
+        netCashFlow: totals.netCashFlow + summary.netCashFlow,
+      }),
+      { income: 0, expense: 0, netCashFlow: 0 }
+    )
 
     return res.status(200).json(
       new ApiResponse(
@@ -124,6 +214,7 @@ const getMetrics = asyncHandler(async (req, res) => {
           expense: rangeMetrics?.expense ?? 0,
           netCashFlow: rangeMetrics?.netCashFlow ?? 0,
           totalBalance,
+          weeklySummary,
         },
         "Metrics fetched successfully"
       )
@@ -135,10 +226,13 @@ const getMetrics = asyncHandler(async (req, res) => {
     Date.UTC(currentDate.getUTCFullYear(), currentDate.getUTCMonth(), 1)
   )
 
-  const [currentMetric, totalBalance] = await Promise.all([
-    Metric.findOne({ user: userId, month: currentMonth }).lean(),
-    getTotalBalance(userId),
-  ])
+  const storedMetric = await Metric.findOne({
+    user: userId,
+    month: currentMonth,
+  }).lean()
+  const currentMetric =
+    storedMetric ?? (await calculateMetricForMonth(userId, currentMonth))
+  const totalBalance = await getTotalBalance(userId)
 
   res.status(200).json(
     new ApiResponse(
@@ -148,6 +242,17 @@ const getMetrics = asyncHandler(async (req, res) => {
         expense: currentMetric?.expense ?? 0,
         netCashFlow: currentMetric?.netCashFlow ?? 0,
         totalBalance,
+        weeklySummary: normalizeWeeklySummary(
+          currentMonth,
+          new Date(
+            Date.UTC(
+              currentMonth.getUTCFullYear(),
+              currentMonth.getUTCMonth() + 1,
+              0
+            )
+          ),
+          currentMetric?.weeklySummary
+        ),
       },
       "Metrics fetched successfully"
     )

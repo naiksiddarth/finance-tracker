@@ -6,6 +6,12 @@ interface IMetricSchema {
   income: number
   expense: number
   netCashFlow: number
+  weeklySummary: {
+    week: number
+    income: number
+    expense: number
+    netCashFlow: number
+  }[]
 }
 
 const MetricSchema = new mongoose.Schema<IMetricSchema>({
@@ -28,6 +34,18 @@ const MetricSchema = new mongoose.Schema<IMetricSchema>({
   netCashFlow: {
     type: Number,
     required: true,
+  },
+  weeklySummary: {
+    type: [
+      {
+        _id: false,
+        week: { type: Number, required: true },
+        income: { type: Number, required: true },
+        expense: { type: Number, required: true },
+        netCashFlow: { type: Number, required: true },
+      },
+    ],
+    default: [],
   },
 })
 

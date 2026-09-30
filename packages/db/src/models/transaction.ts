@@ -50,6 +50,7 @@ async function updateMetric(
       1
     )
   )
+  const week = Math.floor((transaction.date.getUTCDate() - 1) / 7) + 1
   const income =
     transaction.type === "credit" ? transaction.amount * multiplier : 0
   const expense =
@@ -64,6 +65,53 @@ async function updateMetric(
           month,
           income: { $add: [{ $ifNull: ["$income", 0] }, income] },
           expense: { $add: [{ $ifNull: ["$expense", 0] }, expense] },
+          weeklySummary: {
+            $let: {
+              vars: {
+                summaries: { $ifNull: ["$weeklySummary", []] },
+              },
+              in: {
+                $cond: [
+                  { $in: [week, "$$summaries.week"] },
+                  {
+                    $map: {
+                      input: "$$summaries",
+                      as: "summary",
+                      in: {
+                        $cond: [
+                          { $eq: ["$$summary.week", week] },
+                          {
+                            week,
+                            income: { $add: ["$$summary.income", income] },
+                            expense: { $add: ["$$summary.expense", expense] },
+                            netCashFlow: {
+                              $add: ["$$summary.netCashFlow", income - expense],
+                            },
+                          },
+                          "$$summary",
+                        ],
+                      },
+                    },
+                  },
+                  multiplier > 0
+                    ? {
+                        $concatArrays: [
+                          "$$summaries",
+                          [
+                            {
+                              week,
+                              income,
+                              expense,
+                              netCashFlow: income - expense,
+                            },
+                          ],
+                        ],
+                      }
+                    : "$$summaries",
+                ],
+              },
+            },
+          },
         },
       },
       {
@@ -73,6 +121,100 @@ async function updateMetric(
       },
     ],
     { upsert: multiplier > 0, new: true, updatePipeline: true }
+  )
+}
+
+export async function calculateMetricForMonth(
+  userId: mongoose.Types.ObjectId,
+  month: Date
+) {
+  const nextMonth = new Date(
+    Date.UTC(month.getUTCFullYear(), month.getUTCMonth() + 1, 1)
+  )
+  const weeklyResults = await Transaction.aggregate<{
+    _id: number
+    income: number
+    expense: number
+    netCashFlow: number
+  }>([
+    {
+      $match: {
+        user: userId,
+        date: { $gte: month, $lt: nextMonth },
+      },
+    },
+    {
+      $addFields: {
+        week: {
+          $add: [
+            {
+              $floor: {
+                $divide: [{ $subtract: ["$date", month] }, 86_400_000 * 7],
+              },
+            },
+            1,
+          ],
+        },
+      },
+    },
+    {
+      $group: {
+        _id: "$week",
+        income: {
+          $sum: {
+            $cond: [{ $eq: ["$type", "credit"] }, "$amount", 0],
+          },
+        },
+        expense: {
+          $sum: {
+            $cond: [{ $eq: ["$type", "debit"] }, "$amount", 0],
+          },
+        },
+        netCashFlow: {
+          $sum: {
+            $cond: [
+              { $eq: ["$type", "credit"] },
+              "$amount",
+              { $multiply: ["$amount", -1] },
+            ],
+          },
+        },
+      },
+    },
+  ])
+
+  const weeklySummary = weeklyResults.map(
+    ({ _id: week, income, expense, netCashFlow }) => ({
+      week,
+      income,
+      expense,
+      netCashFlow,
+    })
+  )
+  const totals = weeklySummary.reduce(
+    (result, summary) => ({
+      income: result.income + summary.income,
+      expense: result.expense + summary.expense,
+      netCashFlow: result.netCashFlow + summary.netCashFlow,
+    }),
+    { income: 0, expense: 0, netCashFlow: 0 }
+  )
+
+  return Metric.findOneAndUpdate(
+    { user: userId, month },
+    {
+      $set: {
+        user: userId,
+        month,
+        ...totals,
+        weeklySummary,
+      },
+    },
+    {
+      upsert: true,
+      new: true,
+      setDefaultsOnInsert: true,
+    }
   )
 }
 
