@@ -157,29 +157,21 @@ export const MOCK_BUDGET_SNAPSHOT: BudgetSnapshot = {
 export const MOCK_CASH_FLOW = [
   {
     label: "Week 1 (Oct 1-7)",
-    incomeHeight: "85%",
-    expenseHeight: "42%",
     incomeAmount: 3710,
     expenseAmount: 1420,
   },
   {
     label: "Week 2 (Oct 8-14)",
-    incomeHeight: "20%",
-    expenseHeight: "60%",
     incomeAmount: 450,
     expenseAmount: 980,
   },
   {
     label: "Week 3 (Oct 15-21)",
-    incomeHeight: "75%",
-    expenseHeight: "38%",
     incomeAmount: 3260,
     expenseAmount: 810,
   },
   {
     label: "Week 4 (Oct 22-28)",
-    incomeHeight: "15%",
-    expenseHeight: "32%",
     incomeAmount: 0,
     expenseAmount: 635,
   },

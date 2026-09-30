@@ -24,7 +24,6 @@ import {
   MOCK_TRANSACTIONS,
   MOCK_CATEGORY_SPENDING,
   MOCK_BUDGET_SNAPSHOT,
-  MOCK_CASH_FLOW,
 } from "../data/mock-data"
 
 interface DashboardMetrics {
@@ -32,6 +31,13 @@ interface DashboardMetrics {
   expense: number
   netCashFlow: number
   totalBalance: number
+  weeklySummary: {
+    week: number
+    label: string
+    income: number
+    expense: number
+    netCashFlow: number
+  }[]
 }
 
 interface DateRange {
@@ -206,6 +212,12 @@ export function Dashboard() {
     },
   ]
 
+  const weeklySummary = metrics?.weeklySummary ?? []
+  const weeklyAverageExpense = weeklySummary.length
+    ? weeklySummary.reduce((total, summary) => total + summary.expense, 0) /
+      weeklySummary.length
+    : 0
+
   return (
     <div className="flex flex-col gap-6">
       {/* PAGE HEADER ROW */}
@@ -310,7 +322,10 @@ export function Dashboard() {
       <div className="mb-12 grid grid-cols-1 gap-gutter lg:grid-cols-12">
         {/* LEFT COLUMN */}
         <div className="space-y-gutter lg:col-span-7">
-          <IncomeExpenseChart data={MOCK_CASH_FLOW} weeklyAvg={961.3} />
+          <IncomeExpenseChart
+            data={weeklySummary}
+            weeklyAvg={weeklyAverageExpense}
+          />
           <RecentTransactions
             transactions={
               isLoadingTransactions ? MOCK_TRANSACTIONS : transactions
