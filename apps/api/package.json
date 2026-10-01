@@ -10,7 +10,10 @@
     "build": "tsc",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
-    "format": "prettier --write \"**/*.{ts,js}\""
+    "format": "prettier --write \"**/*.{ts,js}\"",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:typecheck": "tsc -p tsconfig.test.json"
   },
   "devDependencies": {
     "@types/bcrypt": "^6.0.0",
@@ -18,8 +21,12 @@
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
     "@types/node": "^24.13.3",
+    "@types/supertest": "^7.2.1",
+    "mongodb-memory-server": "^11.3.0",
+    "supertest": "^7.3.0",
     "tsx": "^4.23.12",
-    "typescript": "^6.0.3"
+    "typescript": "^6.0.3",
+    "vitest": "^5.0.3"
   },
   "dependencies": {
     "@finance-tracker/db": "*",

@@ -25,6 +25,10 @@ import {
   MOCK_CATEGORY_SPENDING,
   MOCK_BUDGET_SNAPSHOT,
 } from "../data/mock-data"
+import {
+  getDashboardDateRange,
+  type DashboardDateRange,
+} from "@/lib/dashboard-date-range"
 
 interface DashboardMetrics {
   income: number
@@ -42,44 +46,6 @@ interface DashboardMetrics {
   }
 }
 
-interface DateRange {
-  startDate: string
-  endDate: string
-}
-
-function formatQueryDate(date: Date) {
-  return date.toISOString().slice(0, 10)
-}
-
-function getThisMonthRange(date = new Date()): DateRange {
-  return {
-    startDate: formatQueryDate(
-      new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), 1))
-    ),
-    endDate: formatQueryDate(date),
-  }
-}
-
-function getDateRange(period: "thisMonth" | "last30Days" | "yearToDate") {
-  const today = new Date()
-  const endDate = formatQueryDate(today)
-
-  if (period === "last30Days") {
-    const startDate = new Date(today)
-    startDate.setUTCDate(startDate.getUTCDate() - 29)
-    return { startDate: formatQueryDate(startDate), endDate }
-  }
-
-  if (period === "yearToDate") {
-    return {
-      startDate: `${today.getUTCFullYear()}-01-01`,
-      endDate,
-    }
-  }
-
-  return getThisMonthRange(today)
-}
-
 export function Dashboard() {
   const { currency } = useAuth()
   const [transactions, setTransactions] = React.useState<Transaction[]>([])
@@ -89,15 +55,18 @@ export function Dashboard() {
   const [selectedPeriod, setSelectedPeriod] = React.useState<
     "thisMonth" | "last30Days" | "yearToDate"
   >("thisMonth")
-  const [dateRange, setDateRange] = React.useState<DateRange>(() =>
-    getDateRange("thisMonth")
+  const [dateRange, setDateRange] = React.useState<DashboardDateRange>(() =>
+    getDashboardDateRange("thisMonth", new Date())
   )
 
   React.useEffect(() => {
     async function loadMetrics() {
       try {
         setIsLoadingMetrics(true)
-        const query = new URLSearchParams(dateRange)
+        const query = new URLSearchParams({
+          startDate: dateRange.startDate,
+          endDate: dateRange.endDate,
+        })
         const response = await apiRequest<{ data: DashboardMetrics }>(
           `/metrics?${query.toString()}`
         )
@@ -214,7 +183,6 @@ export function Dashboard() {
     },
   ]
 
-  const weeklySummary = metrics?.weeklySummary ?? []
   const cashFlowSummary = metrics?.cashFlowSummary ?? {
     period: "week" as const,
     summary: [],
@@ -249,7 +217,7 @@ export function Dashboard() {
               }`}
               onClick={() => {
                 setSelectedPeriod("thisMonth")
-                setDateRange(getDateRange("thisMonth"))
+                setDateRange(getDashboardDateRange("thisMonth", new Date()))
               }}
             >
               This Month
@@ -264,7 +232,7 @@ export function Dashboard() {
               }`}
               onClick={() => {
                 setSelectedPeriod("last30Days")
-                setDateRange(getDateRange("last30Days"))
+                setDateRange(getDashboardDateRange("last30Days", new Date()))
               }}
             >
               Last 30 Days
@@ -279,7 +247,7 @@ export function Dashboard() {
               }`}
               onClick={() => {
                 setSelectedPeriod("yearToDate")
-                setDateRange(getDateRange("yearToDate"))
+                setDateRange(getDashboardDateRange("yearToDate", new Date()))
               }}
             >
               Year to Date

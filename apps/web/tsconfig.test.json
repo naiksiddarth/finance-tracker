@@ -1,0 +1,11 @@
+{
+    "extends": "./tsconfig.app.json",
+    "compilerOptions": {
+        "rootDir": ".",
+        "allowImportingTsExtensions": true
+    },
+    "include": [
+        "src/lib/dashboard-date-range.ts",
+        "tests/**/*.ts"
+    ]
+}
