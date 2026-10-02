@@ -63,6 +63,7 @@ export function Dashboard() {
     async function loadMetrics() {
       try {
         setIsLoadingMetrics(true)
+        setMetrics(null)
         const query = new URLSearchParams({
           startDate: dateRange.startDate,
           endDate: dateRange.endDate,
@@ -183,6 +184,13 @@ export function Dashboard() {
     },
   ]
 
+  function selectPeriod(period: "thisMonth" | "last30Days" | "yearToDate") {
+    setIsLoadingMetrics(true)
+    setMetrics(null)
+    setSelectedPeriod(period)
+    setDateRange(getDashboardDateRange(period, new Date()))
+  }
+
   const cashFlowSummary = metrics?.cashFlowSummary ?? {
     period: "week" as const,
     summary: [],
@@ -215,10 +223,7 @@ export function Dashboard() {
                   ? "text-primary-foreground"
                   : "text-muted-foreground"
               }`}
-              onClick={() => {
-                setSelectedPeriod("thisMonth")
-                setDateRange(getDashboardDateRange("thisMonth", new Date()))
-              }}
+              onClick={() => selectPeriod("thisMonth")}
             >
               This Month
             </Button>
@@ -230,10 +235,7 @@ export function Dashboard() {
                   ? "text-primary-foreground"
                   : "text-muted-foreground"
               }`}
-              onClick={() => {
-                setSelectedPeriod("last30Days")
-                setDateRange(getDashboardDateRange("last30Days", new Date()))
-              }}
+              onClick={() => selectPeriod("last30Days")}
             >
               Last 30 Days
             </Button>
@@ -245,10 +247,7 @@ export function Dashboard() {
                   ? "text-primary-foreground"
                   : "text-muted-foreground"
               }`}
-              onClick={() => {
-                setSelectedPeriod("yearToDate")
-                setDateRange(getDashboardDateRange("yearToDate", new Date()))
-              }}
+              onClick={() => selectPeriod("yearToDate")}
             >
               Year to Date
             </Button>
@@ -302,6 +301,7 @@ export function Dashboard() {
             data={cashFlowSummary.summary}
             period={cashFlowSummary.period}
             weeklyAvg={averageExpense}
+            isLoading={isLoadingMetrics}
           />
           <RecentTransactions
             transactions={
