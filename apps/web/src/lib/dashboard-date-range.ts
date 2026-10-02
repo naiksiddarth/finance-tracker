@@ -12,7 +12,9 @@ function getThisMonthRange(date: Date): DashboardDateRange {
     startDate: formatQueryDate(
       new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), 1))
     ),
-    endDate: formatQueryDate(date),
+    endDate: formatQueryDate(
+      new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth() + 1, 0))
+    ),
   }
 }
 
