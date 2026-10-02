@@ -35,13 +35,13 @@ function handleError(
   }
 
   /*
-   * JWT token expired error
+   * JWT error
    *
    */
-  else if (err instanceof jwt.TokenExpiredError) {
+  else if (err instanceof jwt.JsonWebTokenError) {
     statusCode = 401
     code = ERROR_CODES.UNAUTHORIZED
-    message = "JWT token expired"
+    message = err.message ?? "JWT token expired"
   }
 
   /*
