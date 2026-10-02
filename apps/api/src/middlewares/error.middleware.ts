@@ -1,7 +1,7 @@
 import type { Request, Response, NextFunction } from "express"
 import mongoose from "mongoose"
 import z from "zod"
-
+import jwt from "jsonwebtoken"
 import {
   ERROR_CODES,
   ERROR_MESSAGES,
@@ -32,6 +32,16 @@ function handleError(
     code = err.code
     message = err.message
     data = err.data
+  }
+
+  /*
+   * JWT token expired error
+   *
+   */
+  else if (err instanceof jwt.TokenExpiredError) {
+    statusCode = 401
+    code = ERROR_CODES.UNAUTHORIZED
+    message = "JWT token expired"
   }
 
   /*
