@@ -120,7 +120,7 @@ async function updateMetric(
         },
       },
     ],
-    { upsert: multiplier > 0, new: true, updatePipeline: true }
+    { upsert: multiplier > 0, returnDocument: "after", updatePipeline: true }
   )
 }
 
@@ -212,7 +212,7 @@ export async function calculateMetricForMonth(
     },
     {
       upsert: true,
-      new: true,
+      returnDocument: "after",
       setDefaultsOnInsert: true,
     }
   )

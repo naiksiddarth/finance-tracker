@@ -47,12 +47,19 @@ const updateTransactions = asyncHandler(async (req, res) => {
   if (date !== undefined) {
     updateFields.date = new Date(date)
   }
-
-  const updatedTransaction = await Transaction.findByIdAndUpdate(
-    _id,
+  console.log("update transaction :" + req.user?._id)
+  const updatedTransaction = await Transaction.findOneAndUpdate(
+    {
+      _id: _id,
+      user: req.user?._id,
+    },
     updateFields,
-    { new: true }
+    { returnDocument: "after" }
   )
+
+  if (!updatedTransaction) {
+    throw new AppError(404, "NOT_FOUND", "Transaction not found")
+  }
   res
     .status(200)
     .json(
@@ -90,7 +97,7 @@ const updateCurrency = asyncHandler(async (req, res) => {
   const user = await User.findByIdAndUpdate(
     req.user?._id,
     { currency },
-    { new: true }
+    { returnDocument: "after" }
   ).select("username email currency")
 
   res
