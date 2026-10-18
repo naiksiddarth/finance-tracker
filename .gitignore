@@ -34,3 +34,5 @@ postman
 
 # typescript
 *.tsbuildinfo
+
+.archify

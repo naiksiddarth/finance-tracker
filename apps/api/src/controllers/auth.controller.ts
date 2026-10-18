@@ -1,4 +1,4 @@
-import type { CookieOptions } from "express"
+import { response, type CookieOptions } from "express"
 import { User } from "@finance-tracker/db/user"
 import { asyncHandler } from "../utils/async-handler.ts"
 import { ApiResponse } from "../utils/api-response.ts"
@@ -6,11 +6,11 @@ import { AppError } from "../utils/api-errors.ts"
 import { ERROR_CODES } from "@finance-tracker/shared/constants/errorCodes"
 
 const COOKIE_OPTIONS: CookieOptions = {
-  httpOnly: true,
+  httpOnly: process.env.NODE_ENV === "production",
   secure: process.env.NODE_ENV === "production",
   sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax",
   maxAge: 7 * 24 * 60 * 60 * 1000,
-  path: "/api/auth/refresh",
+  path: "/api/auth",
 }
 
 const registerHandler = asyncHandler(async (req, res) => {
@@ -89,7 +89,7 @@ const refreshHandler = asyncHandler(async (req, res) => {
     throw new AppError(404, ERROR_CODES.NOT_FOUND, "User not found")
   }
 
-  if (incomingRefreshToken !== liveUser?.refreshToken) {
+  if (incomingRefreshToken !== liveUser.refreshToken) {
     throw new AppError(
       401,
       ERROR_CODES.UNAUTHORIZED,
@@ -97,7 +97,7 @@ const refreshHandler = asyncHandler(async (req, res) => {
     )
   }
 
-  const accessToken = liveUser?.generateAccessToken()
+  const accessToken = liveUser.generateAccessToken()
   const userObject = liveUser.toObject()
   const {
     refreshToken: _refreshToken,
@@ -113,4 +113,17 @@ const refreshHandler = asyncHandler(async (req, res) => {
   )
 })
 
-export { registerHandler, loginHandler, refreshHandler }
+const logoutHandler = asyncHandler(async (req, res) => {
+  const liveUser = await User.findById(req.user?._id)
+
+  if (!liveUser) {
+    throw new AppError(404, ERROR_CODES.NOT_FOUND, "User not found")
+  }
+  liveUser.refreshToken = ""
+  await liveUser.save()
+  res
+    .status(200)
+    .cookie("refreshToken", "", COOKIE_OPTIONS)
+    .json(new ApiResponse(200, {}, "User logged out successfully"))
+})
+export { registerHandler, loginHandler, refreshHandler, logoutHandler }
