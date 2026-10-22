@@ -45,9 +45,14 @@ const registerHandler = asyncHandler(async (req, res) => {
 })
 
 const loginHandler = asyncHandler(async (req, res) => {
-  const { username, email, password } = req.body
+  const { identifier, password } = req.body
 
-  const user = await User.findOne(email ? { email } : { username })
+  const user = await User.findOne({
+    $or: [
+      { email: identifier.trim().toLowerCase() },
+      { username: identifier.trim() },
+    ],
+  })
 
   if (!user) {
     throw new AppError(404, ERROR_CODES.NOT_FOUND, "")

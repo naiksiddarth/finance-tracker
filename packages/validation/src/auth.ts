@@ -16,13 +16,8 @@ const registerSchema = z
 
 const loginSchema = z
   .object({
-    email: z.email().optional(),
-    username: z.string().optional(),
+    identifier: z.string().min(1, { message: ERROR_CODES.EMAIL_OR_USERNAME_REQUIRED }),
     password: z.string().min(6, { message: ERROR_CODES.PASSWORD_TOO_SHORT }),
-  })
-  .refine((data) => data.email || data.username, {
-    message: ERROR_CODES.EMAIL_OR_USERNAME_REQUIRED,
-    path: ["email", "username"],
   })
 
 export { registerSchema, loginSchema }
