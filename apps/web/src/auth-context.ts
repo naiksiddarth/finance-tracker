@@ -6,6 +6,7 @@ export interface User {
   username: string
   email: string
   currency: Currency
+  profilePicture: string
 }
 
 export interface LoginCredentials {

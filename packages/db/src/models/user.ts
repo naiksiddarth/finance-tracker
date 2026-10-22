@@ -14,6 +14,7 @@ export interface IUser {
   currency: Currency
   password: string
   refreshToken: string
+  profilePicture: string
 }
 
 export interface IUserMethods {
@@ -29,6 +30,10 @@ export const UserSchema = new mongoose.Schema<IUser, UserModel, IUserMethods>({
     type: String,
     required: true,
     unique: true,
+  },
+  profilePicture: {
+    type: String,
+    default: "default-profile-picture.png",
   },
   email: {
     type: String,

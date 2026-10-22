@@ -4,14 +4,7 @@ import {
   ERROR_CODES,
   type ErrorCode,
 } from "@finance-tracker/shared/constants/errorCodes"
-import type { Currency } from "@finance-tracker/shared/constants/transactions"
-
-interface User {
-  _id: string
-  username: string
-  email: string
-  currency: Currency
-}
+import type { User } from "@/auth-context"
 
 let accessToken: string | null = null
 let refreshPromise: Promise<{

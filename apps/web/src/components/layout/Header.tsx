@@ -3,13 +3,21 @@ import { Link, useLocation } from "react-router-dom"
 import { Wallet, Bell, Moon, Plus } from "lucide-react"
 import { cn } from "@workspace/ui/lib/utils"
 import { Button } from "@workspace/ui/components/button"
-import { Avatar, AvatarFallback } from "@workspace/ui/components/avatar"
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+} from "@workspace/ui/components/avatar"
+
+import { getProfilePictureUrl } from "@/api/config"
+import { useAuth } from "@/hooks/use-auth"
 import { TransactionModal } from "../transactions/TransactionModal"
 
 type NavLinkProps = Array<{ path: string; name: string }>
 
 export function Header({ navLinks }: { navLinks: NavLinkProps }) {
   const location = useLocation()
+  const { user } = useAuth()
   const [isAddModalOpen, setIsAddModalOpen] = React.useState(false)
 
   return (
@@ -83,8 +91,12 @@ export function Header({ navLinks }: { navLinks: NavLinkProps }) {
 
           {/* User Profile Avatar */}
           <Avatar className="ml-1 h-8 w-8 cursor-pointer border border-border">
+            <AvatarImage
+              src={getProfilePictureUrl(user?.profilePicture)}
+              alt={`${user?.username ?? "User"} profile picture`}
+            />
             <AvatarFallback className="bg-secondary label-md font-semibold text-foreground">
-              AX
+              {user?.username?.slice(0, 2).toUpperCase() ?? "AX"}
             </AvatarFallback>
           </Avatar>
         </div>
