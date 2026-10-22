@@ -72,6 +72,7 @@ export function RegisterForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
+  const [name, setName] = useState("")
   const [username, setUsername] = useState("")
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
@@ -80,6 +81,7 @@ export function RegisterForm({
   const [confirmPassword, setConfirmPassword] = useState("")
   const navigate = useNavigate()
 
+  const nameError = getRegisterFieldError(error, "name")
   const usernameError = getRegisterFieldError(error, "username")
   const emailError = getRegisterFieldError(error, "email")
   const passwordError = getRegisterFieldError(error, "password")
@@ -103,7 +105,13 @@ export function RegisterForm({
     try {
       await apiRequest("/auth/register", {
         method: "POST",
-        body: JSON.stringify({ username, email, password, confirmPassword }),
+        body: JSON.stringify({
+          name,
+          username,
+          email,
+          password,
+          confirmPassword,
+        }),
       })
       // On success, redirect to login so they can log in
       navigate("/login")
@@ -135,6 +143,22 @@ export function RegisterForm({
         <CardContent>
           <form onSubmit={handleSubmit}>
             <FieldGroup>
+              <Field>
+                <FieldLabel htmlFor="name">Name</FieldLabel>
+                <Input
+                  id="name"
+                  type="text"
+                  placeholder="Jane Doe"
+                  required
+                  value={name}
+                  onChange={(e) => {
+                    setName(e.target.value)
+                    if (nameError) setError(null)
+                  }}
+                  aria-invalid={Boolean(nameError)}
+                />
+                {nameError && <FieldError>{nameError}</FieldError>}
+              </Field>
               <Field>
                 <FieldLabel htmlFor="username">Username</FieldLabel>
                 <Input

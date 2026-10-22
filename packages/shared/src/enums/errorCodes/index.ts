@@ -23,6 +23,7 @@ export const ERROR_CODES = {
   INVALID_EMAIL: "INVALID_EMAIL",
   PASSWORD_TOO_SHORT: "PASSWORD_TOO_SHORT",
   USERNAME_TOO_SHORT: "USERNAME_TOO_SHORT",
+  NAME_TOO_SHORT: "NAME_TOO_SHORT",
   PASSWORD_CONFIRMATION_MISMATCH: "PASSWORD_CONFIRMATION_MISMATCH",
 
   UNKNOWN_ERROR: "UNKNOWN_ERROR",
@@ -53,6 +54,7 @@ export const ERROR_MESSAGES: Record<ErrorCode, string> = {
   [ERROR_CODES.INVALID_EMAIL]: "Invalid email address",
   [ERROR_CODES.PASSWORD_TOO_SHORT]: "Password must be at least 6 characters long",
   [ERROR_CODES.USERNAME_TOO_SHORT]: "Username must be at least 4 characters long",
+  [ERROR_CODES.NAME_TOO_SHORT]: "Name must be at least 3 characters long",
   [ERROR_CODES.PASSWORD_CONFIRMATION_MISMATCH]: "Passwords do not match",
 
   [ERROR_CODES.UNKNOWN_ERROR]: "An unknown error occurred",

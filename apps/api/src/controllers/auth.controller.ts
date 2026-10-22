@@ -14,8 +14,9 @@ const COOKIE_OPTIONS: CookieOptions = {
 }
 
 const registerHandler = asyncHandler(async (req, res) => {
-  const { username, email, password } = req.body
+  const { name, username, email, password } = req.body
   const user = await User.create({
+    name,
     username,
     email,
     password,

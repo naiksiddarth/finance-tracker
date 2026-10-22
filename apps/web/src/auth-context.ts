@@ -3,6 +3,7 @@ import type { Currency } from "@finance-tracker/shared/constants/transactions"
 
 export interface User {
   _id: string
+  name?: string
   username: string
   email: string
   currency: Currency
@@ -10,8 +11,7 @@ export interface User {
 }
 
 export interface LoginCredentials {
-  email?: string
-  username?: string
+  identifier: string
   password: string
 }
 

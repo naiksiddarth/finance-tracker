@@ -27,11 +27,9 @@ interface ValidationIssue {
   message: string
 }
 
-type LoginMethod = "email" | "username"
-
 function getLoginFieldError(
   error: ApiError | null,
-  field: "email" | "username" | "password"
+  field: "identifier" | "password"
 ) {
   if (!error) return null
 
@@ -43,13 +41,8 @@ function getLoginFieldError(
     if (issue) return issue.message
   }
 
-  if (
-    (field === "email" || field === "username") &&
-    error.code === ERROR_CODES.NOT_FOUND
-  ) {
-    return field === "email"
-      ? "Email does not exist"
-      : "Username does not exist"
+  if (field === "identifier" && error.code === ERROR_CODES.NOT_FOUND) {
+    return "Email or username does not exist"
   }
 
   if (field === "password" && error.code === ERROR_CODES.INVALID_PASSWORD) {
@@ -62,18 +55,15 @@ export function LoginForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
-  const [email, setEmail] = useState("")
-  const [username, setUsername] = useState("")
+  const [identifier, setIdentifier] = useState("")
   const [password, setPassword] = useState("")
-  const [loginMethod, setLoginMethod] = useState<LoginMethod>("email")
   const [error, setError] = useState<ApiError | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const navigate = useNavigate()
 
   const auth = useContext(AuthContext)
 
-  const emailError = getLoginFieldError(error, "email")
-  const usernameError = getLoginFieldError(error, "username")
+  const identifierError = getLoginFieldError(error, "identifier")
   const passwordError = getLoginFieldError(error, "password")
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -85,7 +75,7 @@ export function LoginForm({
     setIsSubmitting(true)
     try {
       await auth.login({
-        [loginMethod]: loginMethod === "email" ? email : username,
+        identifier,
         password,
       })
       navigate("/")
@@ -111,74 +101,28 @@ export function LoginForm({
         <CardHeader>
           <CardTitle>Login to your account</CardTitle>
           <CardDescription>
-            Enter your email below to login to your account
+            Enter your email or username below to login to your account
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit}>
             <FieldGroup>
-              <div
-                className="flex gap-2"
-                role="group"
-                aria-label="Login method"
-              >
-                <Button
-                  type="button"
-                  variant={loginMethod === "email" ? "default" : "outline"}
-                  onClick={() => {
-                    setLoginMethod("email")
-                    setError(null)
-                  }}
-                >
-                  Email
-                </Button>
-                <Button
-                  type="button"
-                  variant={loginMethod === "username" ? "default" : "outline"}
-                  onClick={() => {
-                    setLoginMethod("username")
-                    setError(null)
-                  }}
-                >
-                  Username
-                </Button>
-              </div>
               <Field>
-                {loginMethod === "email" ? (
-                  <>
-                    <FieldLabel htmlFor="email">Email</FieldLabel>
-                    <Input
-                      id="email"
-                      type="email"
-                      placeholder="m@example.com"
-                      required
-                      value={email}
-                      onChange={(e) => {
-                        setEmail(e.target.value)
-                        if (emailError) setError(null)
-                      }}
-                      aria-invalid={Boolean(emailError)}
-                    />
-                    {emailError && <FieldError>{emailError}</FieldError>}
-                  </>
-                ) : (
-                  <>
-                    <FieldLabel htmlFor="username">Username</FieldLabel>
-                    <Input
-                      id="username"
-                      type="text"
-                      placeholder="johndoe"
-                      required
-                      value={username}
-                      onChange={(e) => {
-                        setUsername(e.target.value)
-                        if (usernameError) setError(null)
-                      }}
-                      aria-invalid={Boolean(usernameError)}
-                    />
-                    {usernameError && <FieldError>{usernameError}</FieldError>}
-                  </>
-                )}
+                <FieldLabel htmlFor="identifier">Email or username</FieldLabel>
+                <Input
+                  id="identifier"
+                  type="text"
+                  placeholder="m@example.com or johndoe"
+                  autoComplete="username"
+                  required
+                  value={identifier}
+                  onChange={(e) => {
+                    setIdentifier(e.target.value)
+                    if (identifierError) setError(null)
+                  }}
+                  aria-invalid={Boolean(identifierError)}
+                />
+                {identifierError && <FieldError>{identifierError}</FieldError>}
               </Field>
               <Field>
                 <div className="flex items-center">
@@ -206,7 +150,7 @@ export function LoginForm({
 
                 {passwordError && <FieldError>{passwordError}</FieldError>}
               </Field>
-              {error && !emailError && !usernameError && !passwordError && (
+              {error && !identifierError && !passwordError && (
                 <FieldError>{error.message}</FieldError>
               )}
               <Field>

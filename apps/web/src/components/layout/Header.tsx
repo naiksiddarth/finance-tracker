@@ -38,7 +38,7 @@ export function Header({ navLinks }: { navLinks: NavLinkProps }) {
   const { user, logout } = useAuth()
   const { resolvedTheme, setTheme } = useTheme()
   const [isAddModalOpen, setIsAddModalOpen] = React.useState(false)
-  const displayName = "Unnamed user"
+  const displayName = user?.name?.trim() || "Unnamed user"
 
   async function handleLogout() {
     await logout()
