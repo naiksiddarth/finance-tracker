@@ -1,7 +1,6 @@
 import mongoose from "mongoose"
 
 export interface IAccount {
-  _id: string
   userId: mongoose.Schema.Types.ObjectId
   name: string
   balance: number
