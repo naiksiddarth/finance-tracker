@@ -10,6 +10,7 @@ import {
 export interface IUser {
   _id: string
   username: string
+  name: string
   email: string
   currency: Currency
   password: string
@@ -30,6 +31,9 @@ export const UserSchema = new mongoose.Schema<IUser, UserModel, IUserMethods>({
     type: String,
     required: true,
     unique: true,
+  },
+  name: {
+    type: String,
   },
   profilePicture: {
     type: String,
