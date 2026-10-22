@@ -57,11 +57,14 @@ export function AuthContextProvider({ children }: { children: ReactNode }) {
     }
   }
 
-  //update later for loggout user
   async function logout() {
-    setUser(null)
-    setAccessToken(null)
-    setIsLoading(false)
+    try {
+      await apiRequest("/auth/logout", { method: "POST" })
+    } finally {
+      setUser(null)
+      setAccessToken(null)
+      setIsLoading(false)
+    }
   }
 
   return (

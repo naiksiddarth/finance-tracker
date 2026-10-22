@@ -1,6 +1,7 @@
 import * as React from "react"
-import { Link, useLocation } from "react-router-dom"
-import { Wallet, Bell, Moon, Plus } from "lucide-react"
+import { Link, useLocation, useNavigate } from "react-router-dom"
+import { Coins, LogOut, Mail, Wallet } from "lucide-react"
+import { Bell, Moon, Plus } from "lucide-react"
 import { cn } from "@workspace/ui/lib/utils"
 import { Button } from "@workspace/ui/components/button"
 import {
@@ -8,6 +9,13 @@ import {
   AvatarFallback,
   AvatarImage,
 } from "@workspace/ui/components/avatar"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@workspace/ui/components/dropdown-menu"
 
 import { getProfilePictureUrl } from "@/api/config"
 import { useAuth } from "@/hooks/use-auth"
@@ -17,8 +25,15 @@ type NavLinkProps = Array<{ path: string; name: string }>
 
 export function Header({ navLinks }: { navLinks: NavLinkProps }) {
   const location = useLocation()
-  const { user } = useAuth()
+  const navigate = useNavigate()
+  const { user, logout } = useAuth()
   const [isAddModalOpen, setIsAddModalOpen] = React.useState(false)
+  const displayName = "Unnamed user"
+
+  async function handleLogout() {
+    await logout()
+    navigate("/login", { replace: true })
+  }
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-border bg-card shadow-sm">
@@ -90,15 +105,68 @@ export function Header({ navLinks }: { navLinks: NavLinkProps }) {
           </Button>
 
           {/* User Profile Avatar */}
-          <Avatar className="ml-1 h-8 w-8 cursor-pointer border border-border">
-            <AvatarImage
-              src={getProfilePictureUrl(user?.profilePicture)}
-              alt={`${user?.username ?? "User"} profile picture`}
-            />
-            <AvatarFallback className="bg-secondary label-md font-semibold text-foreground">
-              {user?.username?.slice(0, 2).toUpperCase() ?? "AX"}
-            </AvatarFallback>
-          </Avatar>
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              className="ml-1 rounded-full outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
+              aria-label="Open profile menu"
+            >
+              <Avatar className="h-8 w-8 border border-border">
+                <AvatarImage
+                  src={getProfilePictureUrl(user?.profilePicture)}
+                  alt={`${displayName} profile picture`}
+                />
+                <AvatarFallback className="bg-secondary label-md font-semibold text-foreground">
+                  {user?.username?.slice(0, 2).toUpperCase() ?? "AX"}
+                </AvatarFallback>
+              </Avatar>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-72 p-2">
+              <div className="flex items-center gap-3 rounded-md bg-muted/50 p-3">
+                <Avatar className="h-12 w-12 border border-border">
+                  <AvatarImage
+                    src={getProfilePictureUrl(user?.profilePicture)}
+                    alt={`${displayName} profile picture`}
+                  />
+                  <AvatarFallback className="bg-secondary text-sm font-semibold text-foreground">
+                    {user?.username?.slice(0, 2).toUpperCase() ?? "AX"}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-semibold text-foreground">
+                    {displayName}
+                  </p>
+                  <p className="truncate text-xs text-muted-foreground">
+                    {user?.username
+                      ? `@${user.username}`
+                      : "Username unavailable"}
+                  </p>
+                </div>
+              </div>
+
+              <div className="space-y-2 px-2 py-3 text-xs text-muted-foreground">
+                <div className="flex items-center gap-2">
+                  <Mail className="h-3.5 w-3.5" />
+                  <span className="truncate">
+                    {user?.email ?? "Email unavailable"}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Coins className="h-3.5 w-3.5" />
+                  <span>Currency: {user?.currency ?? "Unavailable"}</span>
+                </div>
+              </div>
+
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                variant="destructive"
+                onClick={() => void handleLogout()}
+                className="gap-2"
+              >
+                <LogOut className="h-4 w-4" />
+                Log out
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
       <TransactionModal
