@@ -47,7 +47,7 @@ interface DashboardMetrics {
 }
 
 export function Dashboard() {
-  const { currency } = useAuth()
+  const { user, currency } = useAuth()
   const [transactions, setTransactions] = React.useState<Transaction[]>([])
   const [isLoadingTransactions, setIsLoadingTransactions] = React.useState(true)
   const [metrics, setMetrics] = React.useState<DashboardMetrics | null>(null)
@@ -209,7 +209,8 @@ export function Dashboard() {
         <div>
           <h1 className="headline-lg text-foreground">Dashboard</h1>
           <p className="mt-0.5 body-md text-muted-foreground">
-            Welcome back, Alex. Here is your financial overview for October.
+            Welcome back {user?.name || ""}. Here is your financial overview for
+            October.
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2 self-start md:self-auto">
