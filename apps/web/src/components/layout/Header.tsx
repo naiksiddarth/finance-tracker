@@ -1,7 +1,15 @@
 import * as React from "react"
 import { Link, useLocation, useNavigate } from "react-router-dom"
-import { Coins, LogOut, Mail, Wallet } from "lucide-react"
-import { Bell, Moon, Plus } from "lucide-react"
+import {
+  Bell,
+  Coins,
+  LogOut,
+  Mail,
+  Moon,
+  Plus,
+  Sun,
+  Wallet,
+} from "lucide-react"
 import { cn } from "@workspace/ui/lib/utils"
 import { Button } from "@workspace/ui/components/button"
 import {
@@ -18,6 +26,7 @@ import {
 } from "@workspace/ui/components/dropdown-menu"
 
 import { getProfilePictureUrl } from "@/api/config"
+import { useTheme } from "@/components/theme-provider"
 import { useAuth } from "@/hooks/use-auth"
 import { TransactionModal } from "../transactions/TransactionModal"
 
@@ -27,6 +36,7 @@ export function Header({ navLinks }: { navLinks: NavLinkProps }) {
   const location = useLocation()
   const navigate = useNavigate()
   const { user, logout } = useAuth()
+  const { resolvedTheme, setTheme } = useTheme()
   const [isAddModalOpen, setIsAddModalOpen] = React.useState(false)
   const displayName = "Unnamed user"
 
@@ -88,10 +98,26 @@ export function Header({ navLinks }: { navLinks: NavLinkProps }) {
           <Button
             variant="outline"
             size="icon"
+            onClick={() =>
+              setTheme(resolvedTheme === "dark" ? "light" : "dark")
+            }
+            aria-label={
+              resolvedTheme === "dark"
+                ? "Switch to light mode"
+                : "Switch to dark mode"
+            }
+            title={
+              resolvedTheme === "dark"
+                ? "Switch to light mode"
+                : "Switch to dark mode"
+            }
             className="h-8 w-8 rounded-lg border-border bg-card text-muted-foreground transition-colors hover:bg-muted"
           >
-            <Moon className="h-4 w-4" />
-            <span className="sr-only">Theme mode</span>
+            {resolvedTheme === "dark" ? (
+              <Sun className="h-4 w-4" />
+            ) : (
+              <Moon className="h-4 w-4" />
+            )}
           </Button>
 
           {/* Primary Action Button */}
