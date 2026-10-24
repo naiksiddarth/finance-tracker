@@ -4,7 +4,6 @@ import {
   createTransaction,
   getTransactions,
   updateTransactions,
-  updateCurrency,
   deleteTransaction,
 } from "../controllers/transaction.controller.ts"
 
@@ -36,6 +35,5 @@ transactionRouter.put(
 
 transactionRouter.delete("/", verifyAccessToken, deleteTransaction)
 
-transactionRouter.put("/currency", verifyAccessToken, updateCurrency)
 
 export { transactionRouter }
