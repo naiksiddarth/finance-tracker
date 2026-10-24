@@ -39,9 +39,10 @@ const TransactionSchema = new mongoose.Schema<ITransaction>(
 
 const transactionsBeforeUpdate = new WeakMap<object, ITransaction>()
 
-async function updateMetric(
+export async function updateMetric(
   transaction: ITransaction,
-  multiplier = 1
+  multiplier = 1,
+  session: mongoose.ClientSession | null = null
 ): Promise<void> {
   const month = new Date(
     Date.UTC(
@@ -120,7 +121,12 @@ async function updateMetric(
         },
       },
     ],
-    { upsert: multiplier > 0, returnDocument: "after", updatePipeline: true }
+    {
+      upsert: multiplier > 0,
+      returnDocument: "after",
+      updatePipeline: true,
+      session,
+    }
   )
 }
 
@@ -218,35 +224,6 @@ export async function calculateMetricForMonth(
   )
 }
 
-TransactionSchema.post("save", async function (transaction) {
-  await updateMetric(transaction)
-})
 
-TransactionSchema.pre("findOneAndUpdate", async function () {
-  const transaction = await this.model.findOne(this.getQuery()).lean()
-
-  if (transaction) {
-    transactionsBeforeUpdate.set(this, transaction as ITransaction)
-  }
-})
-
-TransactionSchema.post("findOneAndUpdate", async function (transaction) {
-  const previousTransaction = transactionsBeforeUpdate.get(this)
-  transactionsBeforeUpdate.delete(this)
-
-  if (previousTransaction) {
-    await updateMetric(previousTransaction, -1)
-  }
-
-  if (transaction) {
-    await updateMetric(transaction, 1)
-  }
-})
-
-TransactionSchema.post("findOneAndDelete", async function (transaction) {
-  if (transaction) {
-    await updateMetric(transaction, -1)
-  }
-})
 
 export const Transaction = mongoose.model("Transaction", TransactionSchema)

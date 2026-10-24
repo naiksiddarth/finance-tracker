@@ -1,20 +1,40 @@
+import mongoose from "mongoose"
+
 import { asyncHandler } from "../utils/async-handler.ts"
 import { ApiResponse } from "../utils/api-response.ts"
 import { AppError } from "../utils/api-errors.ts"
 import { ERROR_CODES } from "@finance-tracker/shared/constants/errorCodes"
-import { Transaction } from "@finance-tracker/db/transaction"
+import { Transaction, updateMetric } from "@finance-tracker/db/transaction"
 import type { CreateTransaction } from "@finance-tracker/validation/transaction"
 import { User } from "@finance-tracker/db/user"
 
 const createTransaction = asyncHandler(async (req, res) => {
   const data: CreateTransaction = req.body
 
-  const transaction = await Transaction.create({
-    user: req.user?._id,
-    amount: data.amount,
-    type: data.type,
-    date: new Date(data.date),
-  })
+  let transaction: any = null
+
+  const session = await mongoose.startSession()
+  try {
+    await session.withTransaction(async () => {
+      const [createdTransaction] = await Transaction.create(
+        [
+          {
+            user: req.user?._id,
+            amount: data.amount,
+            type: data.type,
+            date: new Date(data.date),
+          },
+        ],
+        { session }
+      )
+      transaction = createdTransaction
+      await updateMetric(transaction, 1, session)
+    })
+  } catch (error) {
+    throw error
+  } finally {
+    session.endSession()
+  }
 
   res
     .status(201)
@@ -47,18 +67,35 @@ const updateTransactions = asyncHandler(async (req, res) => {
   if (date !== undefined) {
     updateFields.date = new Date(date)
   }
-  console.log("update transaction :" + req.user?._id)
-  const updatedTransaction = await Transaction.findOneAndUpdate(
-    {
-      _id: _id,
-      user: req.user?._id,
-    },
-    updateFields,
-    { returnDocument: "after" }
-  )
 
-  if (!updatedTransaction) {
-    throw new AppError(404, "NOT_FOUND", "Transaction not found")
+  let updatedTransaction: any = null
+  const session = await mongoose.startSession()
+  try {
+    await session.withTransaction(async (session) => {
+      const previousTransaction = await Transaction.findOne({
+        _id: _id,
+        user: req.user?._id,
+      }).session(session)
+
+      if (!previousTransaction) {
+        throw new AppError(404, ERROR_CODES.NOT_FOUND, "Transaction not found")
+      }
+
+      await updateMetric(previousTransaction, -1, session)
+      updatedTransaction = await Transaction.findOneAndUpdate(
+        {
+          _id: _id,
+          user: req.user?._id,
+        },
+        updateFields,
+        { returnDocument: "after", session }
+      )
+      await updateMetric(updatedTransaction, 1, session)
+    })
+  } catch (error) {
+    throw error
+  } finally {
+    session.endSession()
   }
   res
     .status(200)
@@ -76,39 +113,33 @@ const deleteTransaction = asyncHandler(async (req, res) => {
   if (!_id) {
     throw new AppError(400, ERROR_CODES.BAD_REQUEST, "Transaction id missing")
   }
-  const deletedTransaction = await Transaction.findByIdAndDelete(_id)
-  if (!deletedTransaction) {
-    throw new AppError(400, ERROR_CODES.NOT_FOUND, "Transaction not found")
+  const session = await mongoose.startSession()
+  let deletedTransaction: any = null
+  try {
+    await session.withTransaction(async () => {
+      deletedTransaction =
+        await Transaction.findOneAndDelete({_id: _id, user: req.user?._id}).session(session)
+      if (!deletedTransaction) {
+        throw new AppError(400, ERROR_CODES.NOT_FOUND, "Transaction not found")
+      }
+      await updateMetric(deletedTransaction, -1, session)
+    })
+  } catch (error) {
+    throw error
+  } finally {
+    session.endSession()
   }
+
   res
     .status(200)
     .json(new ApiResponse(200, deletedTransaction, "Transaction deleted"))
 })
 
-const updateCurrency = asyncHandler(async (req, res) => {
-  const { currency } = req.body
 
-  if (!currency) {
-    return res
-      .status(400)
-      .json(new ApiResponse(400, null, "Currency is required"))
-  }
-
-  const user = await User.findByIdAndUpdate(
-    req.user?._id,
-    { currency },
-    { returnDocument: "after" }
-  ).select("username email currency")
-
-  res
-    .status(200)
-    .json(new ApiResponse(200, user, "Currency updated successfully"))
-})
 
 export {
   createTransaction,
   getTransactions,
-  updateCurrency,
   updateTransactions,
   deleteTransaction,
 }

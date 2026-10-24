@@ -28,7 +28,7 @@ const updateCurrency = asyncHandler(async (req, res) => {
   const user = await User.findByIdAndUpdate(
     req.user?._id,
     { currency },
-    { returnDocument: "after" }
+    { returnDocument: "after", runValidators: true }
   ).select("username email currency")
 
   res
