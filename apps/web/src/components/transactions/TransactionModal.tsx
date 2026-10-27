@@ -1,6 +1,6 @@
 import { Dialog, DialogContent } from "@workspace/ui/components/dialog"
 import { TransactionForm } from "@/components/transactions/TransactionForm"
-import type { Transaction } from "@/data/mock-data"
+import type { Transaction } from "@/types/finance"
 
 interface TransactionModalProps {
   isOpen: boolean

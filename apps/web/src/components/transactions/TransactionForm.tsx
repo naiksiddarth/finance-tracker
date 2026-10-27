@@ -29,7 +29,7 @@ import {
 } from "@/components/transactions/TransactionTypeSelector"
 import { useAuth } from "@/hooks/use-auth"
 import { CurrencySymbols } from "@finance-tracker/shared/constants/transactions"
-import type { Transaction } from "@/data/mock-data"
+import type { Transaction } from "@/types/finance"
 import { notifyTransactionsChanged } from "@/lib/transactions"
 
 export interface TransactionFormProps {
@@ -38,6 +38,8 @@ export interface TransactionFormProps {
   transactionId?: string
   transaction?: Transaction
 }
+
+const SHOW_TRANSACTION_METADATA = false
 
 export function TransactionForm({
   mode,
@@ -206,7 +208,7 @@ export function TransactionForm({
       </div>
 
       {/* Description / Merchant */}
-      <div className="space-y-3">
+      {/* <div className="space-y-3">
         <Label className="text-sm font-medium">Description / Merchant</Label>
         <div className="relative">
           <Input
@@ -219,61 +221,54 @@ export function TransactionForm({
             <Check className="absolute top-1/2 right-3 h-4 w-4 -translate-y-1/2 text-success" />
           )}
         </div>
-      </div>
-
-      {/* Category and Source Account Grid */}
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-        <div className="space-y-3">
-          <Label className="text-sm font-medium">Category</Label>
-          <Select defaultValue={mode === "edit" ? "groceries" : undefined}>
-            <SelectTrigger>
-              <SelectValue placeholder="Select category..." />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="groceries">Groceries & Food</SelectItem>
-              <SelectItem value="transportation">Transportation</SelectItem>
-              <SelectItem value="entertainment">Entertainment</SelectItem>
-            </SelectContent>
-          </Select>
+      </div> */}
+      {SHOW_TRANSACTION_METADATA && (
+        /* Category and Source Account Grid */
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          <div className="space-y-3">
+            <Label className="text-sm font-medium">Category</Label>
+            <Select defaultValue={mode === "edit" ? "groceries" : undefined}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select category..." />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="groceries">Groceries & Food</SelectItem>
+                <SelectItem value="transportation">Transportation</SelectItem>
+                <SelectItem value="entertainment">Entertainment</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-3">
+            <Label className="text-sm font-medium">Source Account</Label>
+            <Select defaultValue="chase">
+              <SelectTrigger>
+                <SelectValue placeholder="Select account..." />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="chase">Chase Sapphire (*4910)</SelectItem>
+                <SelectItem value="checking">Main Checking (*1120)</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
-        <div className="space-y-3">
-          <Label className="text-sm font-medium">Source Account</Label>
-          <Select defaultValue="chase">
-            <SelectTrigger>
-              <SelectValue placeholder="Select account..." />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="chase">Chase Sapphire (*4910)</SelectItem>
-              <SelectItem value="checking">Main Checking (*1120)</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
+      )}
 
       {/* Date and Time Grid */}
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         <div className="space-y-3">
           <Label className="text-sm font-medium">Date</Label>
           <Popover>
-            <PopoverTrigger asChild>
-              <Button
-                variant={"outline"}
-                className={cn(
-                  "w-full justify-between text-left font-normal",
-                  !date && "text-muted-foreground"
-                )}
-              >
-                {date ? format(date, "MM/dd/yyyy") : <span>Pick a date</span>}
-                <CalendarIcon className="h-4 w-4 text-muted-foreground opacity-50" />
-              </Button>
+            <PopoverTrigger
+              className={cn(
+                "flex h-8 w-full items-center justify-between rounded-lg border border-input bg-transparent px-2.5 text-left text-sm font-normal transition-colors outline-none hover:bg-muted focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50",
+                !date && "text-muted-foreground"
+              )}
+            >
+              {date ? format(date, "MM/dd/yyyy") : <span>Pick a date</span>}
+              <CalendarIcon className="h-4 w-4 text-muted-foreground opacity-50" />
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0">
-              <Calendar
-                mode="single"
-                selected={date}
-                onSelect={setDate}
-                initialFocus
-              />
+              <Calendar mode="single" selected={date} onSelect={setDate} />
             </PopoverContent>
           </Popover>
         </div>

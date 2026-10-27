@@ -10,8 +10,16 @@ export function TransactionTypeBadge({ category }: TransactionTypeBadgeProps) {
   let badgeStyles
 
   const categoryLower = category.toLowerCase()
-  if (categoryLower === "salary" || categoryLower === "consulting") {
+  if (
+    categoryLower === "salary" ||
+    categoryLower === "consulting" ||
+    categoryLower === "credit" ||
+    categoryLower === "income"
+  ) {
     badgeStyles = "bg-success text-success-foreground border-transparent"
+  } else if (categoryLower === "debit" || categoryLower === "expense") {
+    badgeStyles =
+      "bg-destructive text-destructive-foreground border-transparent"
   } else {
     badgeStyles = "bg-secondary text-primary border-transparent"
   }

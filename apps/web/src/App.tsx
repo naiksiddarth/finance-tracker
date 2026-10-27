@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom"
 import { AppLayout } from "@/components/layout/AppLayout"
 import { ProtectedRoute } from "@/components/layout/ProtectedRoute"
 import { Dashboard } from "@/pages/Dashboard"
+import { Transactions } from "@/pages/Transactions"
 import { Placeholder } from "@/pages/Placeholder"
 import { Login } from "@/pages/Login"
 import { Register } from "@/pages/Register"
@@ -22,10 +23,7 @@ export function App() {
             }
           >
             <Route path="/" element={<Dashboard />} />
-            <Route
-              path="/transactions"
-              element={<Placeholder title="Transactions" />}
-            />
+            <Route path="/transactions" element={<Transactions />} />
             <Route
               path="/analytics"
               element={<Placeholder title="Analytics" />}

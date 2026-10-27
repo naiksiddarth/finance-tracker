@@ -1,6 +1,7 @@
 import * as React from "react"
+import { Pencil, Trash2 } from "lucide-react"
 import { cn } from "@workspace/ui/lib/utils"
-import type { Transaction } from "../../data/mock-data"
+import type { Transaction } from "@/types/finance"
 import { TransactionTypeBadge } from "../finance/TransactionTypeBadge"
 import { TableCell, TableRow } from "@workspace/ui/components/table"
 import { TransactionModal } from "./TransactionModal"
@@ -9,9 +10,17 @@ import { formatCurrency } from "@/lib/currency"
 
 interface TransactionRowProps {
   transaction: Transaction
+  showCategory?: boolean
+  showActions?: boolean
+  onDelete?: (transaction: Transaction) => void
 }
 
-export function TransactionRow({ transaction }: TransactionRowProps) {
+export function TransactionRow({
+  transaction,
+  showCategory = true,
+  showActions = false,
+  onDelete,
+}: TransactionRowProps) {
   const { currency } = useAuth()
   const [isEditModalOpen, setIsEditModalOpen] = React.useState(false)
 
@@ -41,8 +50,13 @@ export function TransactionRow({ transaction }: TransactionRowProps) {
           )}
         </TableCell>
         <TableCell className="p-4 align-top">
-          <TransactionTypeBadge category={transaction.category} />
+          <TransactionTypeBadge category={isCredit ? "Credit" : "Debit"} />
         </TableCell>
+        {showCategory && (
+          <TableCell className="p-4 align-top">
+            <TransactionTypeBadge category={transaction.category} />
+          </TableCell>
+        )}
         <TableCell
           className={cn(
             "p-4 text-right align-top numeric-md font-semibold",
@@ -52,6 +66,34 @@ export function TransactionRow({ transaction }: TransactionRowProps) {
           {amountPrefix}
           {formattedAmount}
         </TableCell>
+        {showActions && (
+          <TableCell className="p-2 text-right align-top">
+            <div className="flex items-center justify-end gap-1">
+              <button
+                type="button"
+                className="inline-flex size-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                aria-label="Edit transaction"
+                onClick={(event) => {
+                  event.stopPropagation()
+                  setIsEditModalOpen(true)
+                }}
+              >
+                <Pencil className="size-3.5" />
+              </button>
+              <button
+                type="button"
+                className="inline-flex size-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
+                aria-label="Delete transaction"
+                onClick={(event) => {
+                  event.stopPropagation()
+                  onDelete?.(transaction)
+                }}
+              >
+                <Trash2 className="size-3.5" />
+              </button>
+            </div>
+          </TableCell>
+        )}
       </TableRow>
       <TransactionModal
         isOpen={isEditModalOpen}
