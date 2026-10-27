@@ -15,7 +15,7 @@ function handleError(
   err: unknown,
   req: Request,
   res: Response,
-  next: NextFunction
+  _next: NextFunction
 ) {
   let statusCode = 500
   let code: ErrorCode = ERROR_CODES.INTERNAL_SERVER_ERROR

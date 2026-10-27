@@ -4,18 +4,23 @@ import { asyncHandler } from "../utils/async-handler.ts"
 import { ApiResponse } from "../utils/api-response.ts"
 import { AppError } from "../utils/api-errors.ts"
 import { ERROR_CODES } from "@finance-tracker/shared/constants/errorCodes"
-import { Transaction, updateMetric } from "@finance-tracker/db/transaction"
+import {
+  Transaction,
+  updateMetric,
+  type ITransaction,
+} from "@finance-tracker/db/transaction"
 import type { CreateTransaction } from "@finance-tracker/validation/transaction"
-import { User } from "@finance-tracker/db/user"
+
+type TransactionDocument = mongoose.HydratedDocument<ITransaction>
 
 const createTransaction = asyncHandler(async (req, res) => {
   const data: CreateTransaction = req.body
 
-  let transaction: any = null
+  let transaction: TransactionDocument | undefined
 
   const session = await mongoose.startSession()
   try {
-    await session.withTransaction(async () => {
+    transaction = await session.withTransaction(async () => {
       const [createdTransaction] = await Transaction.create(
         [
           {
@@ -27,13 +32,26 @@ const createTransaction = asyncHandler(async (req, res) => {
         ],
         { session }
       )
-      transaction = createdTransaction
-      await updateMetric(transaction, 1, session)
+      if (!createdTransaction) {
+        throw new AppError(
+          500,
+          ERROR_CODES.INTERNAL_SERVER_ERROR,
+          "Transaction could not be created"
+        )
+      }
+      await updateMetric(createdTransaction, 1, session)
+      return createdTransaction
     })
-  } catch (error) {
-    throw error
   } finally {
     session.endSession()
+  }
+
+  if (!transaction) {
+    throw new AppError(
+      500,
+      ERROR_CODES.INTERNAL_SERVER_ERROR,
+      "Transaction could not be created"
+    )
   }
 
   res
@@ -68,7 +86,7 @@ const updateTransactions = asyncHandler(async (req, res) => {
     updateFields.date = new Date(date)
   }
 
-  let updatedTransaction: any = null
+  let updatedTransaction: TransactionDocument | null = null
   const session = await mongoose.startSession()
   try {
     await session.withTransaction(async (session) => {
@@ -82,7 +100,7 @@ const updateTransactions = asyncHandler(async (req, res) => {
       }
 
       await updateMetric(previousTransaction, -1, session)
-      updatedTransaction = await Transaction.findOneAndUpdate(
+      const nextTransaction = await Transaction.findOneAndUpdate(
         {
           _id: _id,
           user: req.user?._id,
@@ -90,10 +108,12 @@ const updateTransactions = asyncHandler(async (req, res) => {
         updateFields,
         { returnDocument: "after", session }
       )
+      if (!nextTransaction) {
+        throw new AppError(404, ERROR_CODES.NOT_FOUND, "Transaction not found")
+      }
+      updatedTransaction = nextTransaction
       await updateMetric(updatedTransaction, 1, session)
     })
-  } catch (error) {
-    throw error
   } finally {
     session.endSession()
   }
@@ -114,18 +134,19 @@ const deleteTransaction = asyncHandler(async (req, res) => {
     throw new AppError(400, ERROR_CODES.BAD_REQUEST, "Transaction id missing")
   }
   const session = await mongoose.startSession()
-  let deletedTransaction: any = null
+  let deletedTransaction: TransactionDocument | null = null
   try {
     await session.withTransaction(async () => {
-      deletedTransaction =
-        await Transaction.findOneAndDelete({_id: _id, user: req.user?._id}).session(session)
-      if (!deletedTransaction) {
+      const removedTransaction = await Transaction.findOneAndDelete({
+        _id: _id,
+        user: req.user?._id,
+      }).session(session)
+      if (!removedTransaction) {
         throw new AppError(400, ERROR_CODES.NOT_FOUND, "Transaction not found")
       }
-      await updateMetric(deletedTransaction, -1, session)
+      deletedTransaction = removedTransaction
+      await updateMetric(removedTransaction, -1, session)
     })
-  } catch (error) {
-    throw error
   } finally {
     session.endSession()
   }
@@ -134,8 +155,6 @@ const deleteTransaction = asyncHandler(async (req, res) => {
     .status(200)
     .json(new ApiResponse(200, deletedTransaction, "Transaction deleted"))
 })
-
-
 
 export {
   createTransaction,

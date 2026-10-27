@@ -37,13 +37,6 @@ interface WeeklySummary {
   netCashFlow: number
 }
 
-interface CashFlowSummary {
-  label: string
-  income: number
-  expense: number
-  netCashFlow: number
-}
-
 type SummaryPeriod = "week" | "month"
 
 function getWeekCount(startDate: Date, endDate: Date) {
