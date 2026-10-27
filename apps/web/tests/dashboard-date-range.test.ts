@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 
-import { getDashboardDateRange } from "../src/lib/dashboard-date-range.ts"
+import { getDashboardDateRange } from "../src/lib/dashboard-date-range"
 
 describe("dashboard date ranges", () => {
   const date = new Date("2026-03-01T00:30:00.000Z")
