@@ -31,6 +31,7 @@ import { useAuth } from "@/hooks/use-auth"
 import { TransactionModal } from "../transactions/TransactionModal"
 
 type NavLinkProps = Array<{ path: string; name: string }>
+const SHORTCUT_TOOLTIP_DELAY = 3000
 
 export function Header({ navLinks }: { navLinks: NavLinkProps }) {
   const location = useLocation()
@@ -121,14 +122,16 @@ export function Header({ navLinks }: { navLinks: NavLinkProps }) {
           </Button>
 
           {/* Primary Action Button */}
-          <Button
-            size="sm"
-            onClick={() => setIsAddModalOpen(true)}
-            className="flex h-8 items-center gap-1.5 rounded-lg bg-primary px-3.5 label-md font-medium text-primary-foreground shadow-sm transition-colors hover:opacity-90"
-          >
-            <Plus className="h-4 w-4" />
-            <span>Add Transaction</span>
-          </Button>
+          <ShortcutTooltip shortcut="N">
+            <Button
+              size="sm"
+              onClick={() => setIsAddModalOpen(true)}
+              className="flex h-8 items-center gap-1.5 rounded-lg bg-primary px-3.5 label-md font-medium text-primary-foreground shadow-sm transition-colors hover:opacity-90"
+            >
+              <Plus className="h-4 w-4" />
+              <span>Add Transaction</span>
+            </Button>
+          </ShortcutTooltip>
 
           {/* User Profile Avatar */}
           <DropdownMenu>
@@ -201,5 +204,51 @@ export function Header({ navLinks }: { navLinks: NavLinkProps }) {
         mode="add"
       />
     </header>
+  )
+}
+
+function ShortcutTooltip({
+  shortcut,
+  children,
+}: {
+  shortcut: string
+  children: React.ReactNode
+}) {
+  const [isVisible, setIsVisible] = React.useState(false)
+  const timeoutRef = React.useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  function clearTooltipTimer() {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current)
+      timeoutRef.current = null
+    }
+    setIsVisible(false)
+  }
+
+  function startTooltipTimer() {
+    timeoutRef.current = setTimeout(
+      () => setIsVisible(true),
+      SHORTCUT_TOOLTIP_DELAY
+    )
+  }
+
+  React.useEffect(() => clearTooltipTimer, [])
+
+  return (
+    <span
+      className="relative inline-flex"
+      onMouseEnter={startTooltipTimer}
+      onMouseLeave={clearTooltipTimer}
+    >
+      {children}
+      {isVisible && (
+        <span
+          role="tooltip"
+          className="absolute top-full left-1/2 z-50 mt-2 -translate-x-1/2 rounded-md border border-border bg-popover px-2 py-1 text-xs whitespace-nowrap text-popover-foreground shadow-md"
+        >
+          Shortcut: {shortcut}
+        </span>
+      )}
+    </span>
   )
 }
