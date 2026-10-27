@@ -1,5 +1,5 @@
 import { CategorySpendingItem } from "../finance/CategorySpendingItem"
-import type { CategorySpending } from "../../data/mock-data"
+import type { CategorySpending } from "@/types/finance"
 
 interface SpendingByCategoryProps {
   categories: CategorySpending[]

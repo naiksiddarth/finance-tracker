@@ -4,27 +4,22 @@ import {
   ArrowDownCircle,
   ArrowUpCircle,
   PiggyBank,
-  Download,
+  // Download,
 } from "lucide-react"
 import { Button } from "@workspace/ui/components/button"
 import { ButtonGroup } from "@workspace/ui/components/button-group"
-import { Card, CardContent } from "@workspace/ui/components/card"
+// import { Card, CardContent } from "@workspace/ui/components/card"
 import { useAuth } from "@/hooks/use-auth"
 import { formatCurrency } from "@/lib/currency"
 import { apiRequest } from "@/api/client"
 import { TRANSACTIONS_CHANGED_EVENT } from "@/lib/transactions"
-import type { Transaction } from "../data/mock-data"
+import type { Transaction } from "@/types/finance"
 
 import { MetricCard } from "../components/finance/MetricCard"
 import { IncomeExpenseChart } from "../components/dashboard/IncomeExpenseChart"
 import { RecentTransactions } from "../components/dashboard/RecentTransactions"
-import { SpendingByCategory } from "../components/dashboard/SpendingByCategory"
-import { BudgetSnapshot } from "../components/dashboard/BudgetSnapshot"
-import {
-  MOCK_TRANSACTIONS,
-  MOCK_CATEGORY_SPENDING,
-  MOCK_BUDGET_SNAPSHOT,
-} from "../data/mock-data"
+// import { SpendingByCategory } from "../components/dashboard/SpendingByCategory"
+// import { BudgetSnapshot } from "../components/dashboard/BudgetSnapshot"
 import {
   getDashboardDateRange,
   type DashboardDateRange,
@@ -297,7 +292,7 @@ export function Dashboard() {
       {/* MAIN TWO-COLUMN WORKSPACE */}
       <div className="mb-12 grid grid-cols-1 gap-gutter lg:grid-cols-12">
         {/* LEFT COLUMN */}
-        <div className="space-y-gutter lg:col-span-7">
+        <div className="space-y-gutter lg:col-span-12">
           <IncomeExpenseChart
             data={cashFlowSummary.summary}
             period={cashFlowSummary.period}
@@ -306,17 +301,16 @@ export function Dashboard() {
           />
           <RecentTransactions
             transactions={
-              isLoadingTransactions ? MOCK_TRANSACTIONS : transactions
+              isLoadingTransactions ? [] : transactions
             }
           />
         </div>
 
         {/* RIGHT COLUMN */}
-        <div className="space-y-gutter lg:col-span-5">
+        {/* <div className="space-y-gutter lg:col-span-5">
           <SpendingByCategory categories={MOCK_CATEGORY_SPENDING} />
           <BudgetSnapshot snapshot={MOCK_BUDGET_SNAPSHOT} />
 
-          {/* QUICK SHORTCUT */}
           <Card className="gap-0 rounded-lg border border-border bg-muted p-5 shadow-sm ring-0">
             <CardContent className="flex items-center justify-between gap-3 p-0">
               <div className="flex items-center gap-3">
@@ -341,7 +335,7 @@ export function Dashboard() {
               </Button>
             </CardContent>
           </Card>
-        </div>
+        </div> */}
       </div>
     </div>
   )

@@ -1,6 +1,6 @@
 import { ArrowRight } from "lucide-react"
 import { TransactionTable } from "../transactions/TransactionTable"
-import type { Transaction } from "../../data/mock-data"
+import type { Transaction } from "@/types/finance"
 
 interface RecentTransactionsProps {
   transactions: Transaction[]

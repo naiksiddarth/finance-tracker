@@ -1,5 +1,5 @@
 import { AlertTriangle, CheckCircle } from "lucide-react"
-import type { BudgetSnapshot as BudgetSnapshotType } from "../../data/mock-data"
+import type { BudgetSnapshot as BudgetSnapshotType } from "@/types/finance"
 import { cn } from "@workspace/ui/lib/utils"
 import { useAuth } from "@/hooks/use-auth"
 import { formatCurrency } from "@/lib/currency"
