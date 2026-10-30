@@ -118,11 +118,11 @@ export function Header({ navLinks }: { navLinks: NavLinkProps }) {
     <header className="sticky top-0 z-40 w-full border-b border-border bg-card shadow-sm">
       <div className="mx-auto flex h-14 w-full max-w-7xl items-center justify-between px-margin">
         {/* Brand & Global Links Cluster */}
-        <div className="flex items-center gap-8">
+        <div className="flex items-center gap-4 md:gap-10">
           {/* Logo / Title */}
           <Link
             to="/"
-            className="flex items-center gap-2 headline-md font-bold tracking-tight text-foreground"
+            className="flex shrink-0 items-center gap-1.5 text-base font-bold tracking-tight whitespace-nowrap text-foreground sm:gap-2 sm:headline-md"
           >
             <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary">
               <Wallet className="h-4 w-4 text-primary-foreground" />
@@ -153,7 +153,7 @@ export function Header({ navLinks }: { navLinks: NavLinkProps }) {
         </div>
 
         {/* Trailing Controls Cluster */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
           {/* Trailing Icon Actions */}
           <Button
             variant="outline"
