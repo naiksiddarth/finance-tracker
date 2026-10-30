@@ -67,6 +67,17 @@ export function AuthContextProvider({ children }: { children: ReactNode }) {
     }
   }
 
+  async function updateCurrency(currency: Currency) {
+    await apiRequest("/user/currency", {
+      method: "PUT",
+      body: JSON.stringify({ currency }),
+    })
+
+    setUser((currentUser) =>
+      currentUser ? { ...currentUser, currency } : currentUser
+    )
+  }
+
   return (
     <AuthContext.Provider
       value={{
@@ -75,6 +86,7 @@ export function AuthContextProvider({ children }: { children: ReactNode }) {
         isAuthenticated: user !== null,
         isLoading,
         login,
+        updateCurrency,
         logout,
       }}
     >

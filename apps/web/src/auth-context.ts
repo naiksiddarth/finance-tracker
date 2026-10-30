@@ -21,6 +21,7 @@ export interface AuthContextValues {
   isAuthenticated: boolean
   isLoading: boolean
   login: (credentials: LoginCredentials) => Promise<void>
+  updateCurrency: (currency: Currency) => Promise<void>
   logout: () => Promise<void>
 }
 

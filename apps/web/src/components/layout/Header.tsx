@@ -6,6 +6,7 @@ import {
   LogOut,
   Mail,
   Moon,
+  Pencil,
   Plus,
   Sun,
   Wallet,
@@ -24,8 +25,21 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@workspace/ui/components/dropdown-menu"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@workspace/ui/components/select"
+import {
+  CurrencySymbols,
+  CurrencyValues,
+  type Currency,
+} from "@finance-tracker/shared/constants/transactions"
 
 import { getProfilePictureUrl } from "@/api/config"
+import { ApiError } from "@/api/api-error"
 import { useTheme } from "@/components/theme-provider"
 import { useAuth } from "@/hooks/use-auth"
 import { TransactionModal } from "../transactions/TransactionModal"
@@ -36,14 +50,68 @@ const SHORTCUT_TOOLTIP_DELAY = 3000
 export function Header({ navLinks }: { navLinks: NavLinkProps }) {
   const location = useLocation()
   const navigate = useNavigate()
-  const { user, logout } = useAuth()
+  const { user, updateCurrency, logout } = useAuth()
   const { resolvedTheme, setTheme } = useTheme()
   const [isAddModalOpen, setIsAddModalOpen] = React.useState(false)
+  const [isEditingCurrency, setIsEditingCurrency] = React.useState(false)
+  const [currencyDraft, setCurrencyDraft] = React.useState<Currency | null>(
+    null
+  )
+  const [currencyError, setCurrencyError] = React.useState<string | null>(null)
+  const [isUpdatingCurrency, setIsUpdatingCurrency] = React.useState(false)
   const displayName = user?.name?.trim() || "Unnamed user"
 
   async function handleLogout() {
     await logout()
     navigate("/login", { replace: true })
+  }
+
+  function startCurrencyEdit() {
+    setCurrencyDraft(user?.currency ?? null)
+    setCurrencyError(null)
+    setIsEditingCurrency(true)
+  }
+
+  function closeCurrencyEdit() {
+    setIsEditingCurrency(false)
+    setCurrencyError(null)
+  }
+
+  React.useEffect(() => {
+    if (!isEditingCurrency) {
+      return
+    }
+
+    function handleEscape(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        closeCurrencyEdit()
+      }
+    }
+
+    document.addEventListener("keydown", handleEscape, true)
+    return () => document.removeEventListener("keydown", handleEscape, true)
+  }, [isEditingCurrency])
+
+  async function handleCurrencyChange(value: string | null) {
+    if (!value) {
+      return
+    }
+
+    const nextCurrency = value as Currency
+    setCurrencyDraft(nextCurrency)
+    setCurrencyError(null)
+    setIsUpdatingCurrency(true)
+
+    try {
+      await updateCurrency(nextCurrency)
+      setIsEditingCurrency(false)
+    } catch (error: unknown) {
+      setCurrencyError(
+        error instanceof ApiError ? error.message : "Unable to update currency"
+      )
+    } finally {
+      setIsUpdatingCurrency(false)
+    }
   }
 
   return (
@@ -134,7 +202,13 @@ export function Header({ navLinks }: { navLinks: NavLinkProps }) {
           </ShortcutTooltip>
 
           {/* User Profile Avatar */}
-          <DropdownMenu>
+          <DropdownMenu
+            onOpenChange={(open) => {
+              if (!open) {
+                closeCurrencyEdit()
+              }
+            }}
+          >
             <DropdownMenuTrigger
               className="ml-1 rounded-full outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
               aria-label="Open profile menu"
@@ -181,8 +255,59 @@ export function Header({ navLinks }: { navLinks: NavLinkProps }) {
                 </div>
                 <div className="flex items-center gap-2">
                   <Coins className="h-3.5 w-3.5" />
-                  <span>Currency: {user?.currency ?? "Unavailable"}</span>
+                  <span className="shrink-0">Currency</span>
+                  {isEditingCurrency ? (
+                    <Select
+                      value={currencyDraft ?? undefined}
+                      onValueChange={(value) => {
+                        void handleCurrencyChange(value)
+                      }}
+                      disabled={isUpdatingCurrency}
+                    >
+                      <SelectTrigger
+                        size="sm"
+                        aria-invalid={currencyError ? true : undefined}
+                        className="min-w-20 flex-1"
+                      >
+                        <SelectValue placeholder="Select currency" />
+                      </SelectTrigger>
+                      <SelectContent align="end">
+                        {CurrencyValues.map((availableCurrency) => (
+                          <SelectItem
+                            key={availableCurrency}
+                            value={availableCurrency}
+                          >
+                            {availableCurrency} (
+                            {CurrencySymbols[availableCurrency]})
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  ) : (
+                    <span className="min-w-0 flex-1 truncate">
+                      {user?.currency ?? "Unavailable"}
+                    </span>
+                  )}
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon-xs"
+                    aria-label="Edit currency"
+                    title="Edit currency"
+                    onClick={startCurrencyEdit}
+                    className="text-muted-foreground"
+                  >
+                    <Pencil />
+                  </Button>
                 </div>
+                {currencyError && isEditingCurrency && (
+                  <p
+                    className="mt-1 ml-6 text-xs text-destructive"
+                    role="alert"
+                  >
+                    {currencyError}
+                  </p>
+                )}
               </div>
 
               <DropdownMenuSeparator />
