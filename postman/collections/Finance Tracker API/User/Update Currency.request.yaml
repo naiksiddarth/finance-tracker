@@ -1,0 +1,20 @@
+$kind: http-request
+method: PUT
+url: "{{baseUrl}}/api/user/currency"
+order: 4000
+auth:
+  type: bearer
+  credentials:
+    token: "{{accessToken}}"
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "currency": "INR"
+    }
+description: |
+  Update the user's preferred currency.
+  - currency (required): ISO 4217 currency code (e.g., "USD", "EUR", "GBP", "JPY", "INR")
+  - The currency symbol and formatting will update across all monetary displays in the app.

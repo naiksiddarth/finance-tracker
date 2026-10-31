@@ -1,0 +1,24 @@
+$kind: http-request
+method: PUT
+url: "{{baseUrl}}/api/transaction"
+order: 3000
+auth:
+  type: bearer
+  credentials:
+    token: "{{accessToken}}"
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "_id": "6adc5c1f626230ff8766d091",
+      "amount": 399.00,
+      "date": "2026-10-07T10:00:00Z"
+    }
+description: |
+  Update a transaction by providing _id and whichever fields to update:
+  - amount (optional): new amount value
+  - date (optional): new date string
+  - Both can be omitted; the other fields will remain unchanged.
+  - Only provided fields are updated.

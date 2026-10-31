@@ -24,7 +24,6 @@ dist-ssr
 !.vscode/extensions.json
 .idea
 .postman
-postman
 .DS_Store
 *.suo
 *.ntvs*

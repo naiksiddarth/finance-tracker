@@ -1,0 +1,8 @@
+$kind: http-request
+method: GET
+url: "{{baseUrl}}/api/metrics"
+order: 2000
+auth:
+  type: bearer
+  credentials:
+    token: "{{accessToken}}"

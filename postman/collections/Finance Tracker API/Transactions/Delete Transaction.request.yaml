@@ -1,0 +1,19 @@
+$kind: http-request
+method: DELETE
+url: "{{baseUrl}}/api/transaction"
+order: 5000
+auth:
+  type: bearer
+  credentials:
+    token: "{{accessToken}}"
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "_id": "6adc5744dd2b179941c2c2b0"
+    }
+description: |
+  Delete a transaction by providing its _id in the request body.
+  Returns 400 if _id is missing or the transaction is not found.

@@ -1,0 +1,18 @@
+$kind: http-request
+method: POST
+url: "{{baseUrl}}/api/transaction"
+order: 1000
+auth:
+  type: bearer
+  credentials:
+    token: "{{accessToken}}"
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "amount": 400,
+      "type": "credit",
+      "date": "2026-10-23T00:00:00Z"
+    }

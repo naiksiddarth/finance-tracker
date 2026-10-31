@@ -1,0 +1,27 @@
+$kind: http-request
+method: POST
+url: "{{baseUrl}}/api/auth/register"
+settings:
+  disabledSystemHeaders:
+    - content-type
+order: 1000
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "name": "Siddarth Naik",
+      "username": "naiksiddarth",
+      "email": "siddarthnaik2131@gmail.com",
+      "password": "siddu3138",
+      "confirmPassword": "siddu3138"
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      const json = pm.response.json();
+      if (json.data && json.data.accessToken) {
+        pm.collectionVariables.set("accessToken", json.data.accessToken);
+      }
+    language: text/javascript

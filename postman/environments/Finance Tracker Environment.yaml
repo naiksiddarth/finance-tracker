@@ -1,0 +1,11 @@
+$kind: environment
+values:
+  - key: baseUrl
+    value: http://localhost:3131
+    type: default
+  - key: accessToken
+    value: ""
+    type: default
+  - key: refreshToken
+    value: ""
+    type: default
