@@ -4,6 +4,7 @@ import {
   Bell,
   Coins,
   LogOut,
+  Menu,
   Mail,
   Moon,
   Pencil,
@@ -158,7 +159,7 @@ export function Header({ navLinks }: { navLinks: NavLinkProps }) {
           <Button
             variant="outline"
             size="icon"
-            className="h-8 w-8 rounded-lg border-border bg-card text-muted-foreground transition-colors hover:bg-muted"
+            className="hidden h-8 w-8 rounded-lg border-border bg-card text-muted-foreground transition-colors hover:bg-muted sm:inline-flex"
           >
             <Bell className="h-4 w-4" />
             <span className="sr-only">Notifications</span>
@@ -197,9 +198,39 @@ export function Header({ navLinks }: { navLinks: NavLinkProps }) {
               className="flex h-8 items-center gap-1.5 rounded-lg bg-primary px-3.5 label-md font-medium text-primary-foreground shadow-sm transition-colors hover:opacity-90"
             >
               <Plus className="h-4 w-4" />
-              <span>Add Transaction</span>
+              <span className="hidden sm:inline">Add Transaction</span>
             </Button>
           </ShortcutTooltip>
+
+          {/* Mobile Navigation Menu */}
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              aria-label="Open navigation menu"
+              title="Open navigation menu"
+              className="ml-1 flex h-8 w-8 items-center justify-center rounded-lg border border-border bg-card text-muted-foreground transition-colors outline-none hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring md:hidden"
+            >
+              <Menu className="h-4 w-4" />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56 space-y-1">
+              {navLinks.map((link) => {
+                const isActive = location.pathname === link.path
+
+                return (
+                  <DropdownMenuItem
+                    key={link.path}
+                    onClick={() => navigate(link.path)}
+                    className={cn(
+                      "py-1.5 text-sm font-normal",
+                      isActive &&
+                        "bg-accent font-semibold text-accent-foreground"
+                    )}
+                  >
+                    {link.name}
+                  </DropdownMenuItem>
+                )
+              })}
+            </DropdownMenuContent>
+          </DropdownMenu>
 
           {/* User Profile Avatar */}
           <DropdownMenu
