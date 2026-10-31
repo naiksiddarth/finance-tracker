@@ -1,8 +1,7 @@
 {
   "name": "api",
-  "version": "0.0.1",
   "private": true,
-  "description": "",
+  "description": "API for the Finance Tracker application",
   "author": "Siddarth Naik",
   "type": "module",
   "scripts": {

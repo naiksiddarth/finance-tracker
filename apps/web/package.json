@@ -1,6 +1,7 @@
 {
   "name": "web",
-  "version": "0.0.1",
+  "description": "Web application for the Finance Tracker",
+  "author": "Siddarth Naik",
   "type": "module",
   "private": true,
   "scripts": {
