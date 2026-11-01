@@ -1,6 +1,6 @@
 import mongoose, { Model } from "mongoose"
 import bcrypt from "bcrypt"
-import jwt from "jsonwebtoken"
+import jwt, { type SignOptions } from "jsonwebtoken"
 
 import {
   Currency,
@@ -14,13 +14,12 @@ export interface IUser {
   email: string
   currency: Currency
   password: string
-  refreshToken: string
   profilePicture: string
 }
 
 export interface IUserMethods {
   comparePassword(password: string): Promise<boolean>
-  generateRefreshToken(): Promise<string>
+  generateRefreshToken(): string
   generateAccessToken(): string
 }
 
@@ -49,9 +48,6 @@ export const UserSchema = new mongoose.Schema<IUser, UserModel, IUserMethods>({
     enum: CurrencyValues,
     default: "USD",
   },
-  refreshToken: {
-    type: String,
-  },
   password: {
     type: String,
     required: true,
@@ -75,18 +71,22 @@ UserSchema.methods.generateAccessToken = function (): string {
   return jwt.sign(
     { _id: this._id, username: this.username, email: this.email },
     process.env.ACCESS_TOKEN_SECRET!,
-    { expiresIn: "15m" }
+    {
+      expiresIn: (process.env.ACCESS_TOKEN_EXPIRATION ||
+        "15m") as SignOptions["expiresIn"],
+    }
   )
 }
 
-UserSchema.methods.generateRefreshToken = async function (): Promise<string> {
+UserSchema.methods.generateRefreshToken = function (): string {
   const refreshToken = jwt.sign(
     { _id: this._id, username: this.username, email: this.email },
     process.env.REFRESH_TOKEN_SECRET!,
-    { expiresIn: "7d" }
+    {
+      expiresIn: (process.env.REFRESH_TOKEN_EXPIRATION ||
+        "7d") as SignOptions["expiresIn"],
+    }
   )
-  this.refreshToken = refreshToken
-  await this.save()
   return refreshToken
 }
 

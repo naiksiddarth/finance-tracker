@@ -1,9 +1,12 @@
 import { type CookieOptions } from "express"
+import crypto from "crypto"
+
 import { User } from "@finance-tracker/db/user"
 import { asyncHandler } from "../utils/async-handler.ts"
 import { ApiResponse } from "../utils/api-response.ts"
 import { AppError } from "../utils/api-errors.ts"
 import { ERROR_CODES } from "@finance-tracker/shared/constants/errorCodes"
+import { SessionModel } from "@finance-tracker/db/session"
 
 const COOKIE_OPTIONS: CookieOptions = {
   httpOnly: process.env.NODE_ENV === "production",
@@ -12,6 +15,9 @@ const COOKIE_OPTIONS: CookieOptions = {
   maxAge: 7 * 24 * 60 * 60 * 1000,
   path: "/api/auth",
 }
+
+const hashRefreshToken = (refreshToken: string) =>
+  crypto.createHash("sha256").update(refreshToken).digest("hex")
 
 const registerHandler = asyncHandler(async (req, res) => {
   const { name, username, email, password } = req.body
@@ -22,16 +28,16 @@ const registerHandler = asyncHandler(async (req, res) => {
     password,
   })
 
-  // we dont have a better place to store this for now
-  const refreshToken = await user.generateRefreshToken()
+  const refreshToken = user.generateRefreshToken()
   const accessToken = user.generateAccessToken()
 
+  await SessionModel.create({
+    userId: user._id,
+    refreshTokenHash: hashRefreshToken(refreshToken),
+  })
+
   const userObject = user.toObject()
-  const {
-    password: _password,
-    refreshToken: _refreshToken,
-    ...userWithoutPassword
-  } = userObject // stripping password and refresh token
+  const { password: _password, ...userWithoutPassword } = userObject // stripping password and refresh token
 
   res
     .status(201)
@@ -65,14 +71,15 @@ const loginHandler = asyncHandler(async (req, res) => {
   }
 
   const userObject = user.toObject()
-  const {
-    password: _password,
-    refreshToken: _refreshToken,
-    ...userWithoutPassword
-  } = userObject // stripping password and refresh token
+  const { password: _password, ...userWithoutPassword } = userObject // stripping password and refresh token
 
-  const refreshToken = await user.generateRefreshToken()
+  const refreshToken = user.generateRefreshToken()
   const accessToken = user.generateAccessToken()
+
+  await SessionModel.create({
+    userId: user._id,
+    refreshTokenHash: hashRefreshToken(refreshToken),
+  })
 
   res
     .status(200)
@@ -88,32 +95,36 @@ const loginHandler = asyncHandler(async (req, res) => {
 
 const refreshHandler = asyncHandler(async (req, res) => {
   // get the refresh token from the cookie
-  const liveUser = await User.findById(req.user?._id)
+  const liveUser = await User.findById(req.user?._id).select("-password")
   const incomingRefreshToken = req.cookies?.refreshToken
+
+  if (!incomingRefreshToken) {
+    throw new AppError(401, ERROR_CODES.UNAUTHORIZED, "No Refresh Token Found")
+  }
 
   if (!liveUser) {
     throw new AppError(404, ERROR_CODES.NOT_FOUND, "User not found")
   }
 
-  if (incomingRefreshToken !== liveUser.refreshToken) {
+  const session = await SessionModel.findOne({
+    userId: liveUser._id,
+    refreshTokenHash: hashRefreshToken(incomingRefreshToken),
+  })
+
+  if (!session) {
     throw new AppError(
       401,
       ERROR_CODES.UNAUTHORIZED,
-      "Refresh token is expired "
+      "Refresh token is expired or invalid. Please login again."
     )
   }
 
   const accessToken = liveUser.generateAccessToken()
-  const userObject = liveUser.toObject()
-  const {
-    refreshToken: _refreshToken,
-    password: _password,
-    ...userWithoutPassword
-  } = userObject
+
   res.json(
     new ApiResponse(
       200,
-      { accessToken, user: userWithoutPassword },
+      { accessToken, user: liveUser.toObject() },
       "Access Token Refreshed"
     )
   )
@@ -125,8 +136,12 @@ const logoutHandler = asyncHandler(async (req, res) => {
   if (!liveUser) {
     throw new AppError(404, ERROR_CODES.NOT_FOUND, "User not found")
   }
-  liveUser.refreshToken = ""
-  await liveUser.save()
+
+  await SessionModel.deleteOne({
+    userId: liveUser._id,
+    refreshTokenHash: hashRefreshToken(req.cookies?.refreshToken),
+  })
+
   res
     .status(200)
     .cookie("refreshToken", "", COOKIE_OPTIONS)
