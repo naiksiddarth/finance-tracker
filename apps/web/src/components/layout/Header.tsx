@@ -132,7 +132,7 @@ export function Header({ navLinks }: { navLinks: NavLinkProps }) {
           </Link>
 
           {/* Navigation Links */}
-          <nav className="hidden items-center gap-6 md:flex">
+          <nav className="hidden items-center gap-6 lg:flex">
             {navLinks.map((link) => {
               const isActive = location.pathname === link.path
               return (
@@ -207,7 +207,7 @@ export function Header({ navLinks }: { navLinks: NavLinkProps }) {
             <DropdownMenuTrigger
               aria-label="Open navigation menu"
               title="Open navigation menu"
-              className="ml-1 flex h-8 w-8 items-center justify-center rounded-lg border border-border bg-card text-muted-foreground transition-colors outline-none hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring md:hidden"
+              className="ml-1 flex h-8 w-8 items-center justify-center rounded-lg border border-border bg-card text-muted-foreground transition-colors outline-none hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring lg:hidden"
             >
               <Menu className="h-4 w-4" />
             </DropdownMenuTrigger>
