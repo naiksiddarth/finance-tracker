@@ -6,6 +6,7 @@ import { Transactions } from "@/pages/Transactions"
 import { Placeholder } from "@/pages/Placeholder"
 import { Login } from "@/pages/Login"
 import { Register } from "@/pages/Register"
+import { Landing } from "@/pages/Landing"
 import { AuthContextProvider } from "@/AuthContextProvider"
 
 export function App() {
@@ -15,6 +16,7 @@ export function App() {
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/" element={<Landing />} />
           <Route
             element={
               <ProtectedRoute>
@@ -22,7 +24,7 @@ export function App() {
               </ProtectedRoute>
             }
           >
-            <Route path="/" element={<Dashboard />} />
+            <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/transactions" element={<Transactions />} />
             <Route
               path="/analytics"
@@ -33,6 +35,7 @@ export function App() {
               path="/settings"
               element={<Placeholder title="Settings" />}
             />
+            <Route path="*" element={<Placeholder title="Page not found" />} />
           </Route>
         </Routes>
       </BrowserRouter>

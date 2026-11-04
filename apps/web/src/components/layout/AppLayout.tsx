@@ -4,7 +4,7 @@ import { Header } from "@/components/layout/Header"
 
 export function AppLayout() {
   const navLinks = [
-    { name: "Dashboard", path: "/" },
+    { name: "Dashboard", path: "/dashboard" },
     { name: "Transactions", path: "/transactions" },
     { name: "Analytics", path: "/analytics" },
     { name: "Budgets", path: "/budgets" },

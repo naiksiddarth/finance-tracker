@@ -122,7 +122,7 @@ export function Header({ navLinks }: { navLinks: NavLinkProps }) {
         <div className="flex items-center gap-4 md:gap-10">
           {/* Logo / Title */}
           <Link
-            to="/"
+            to="/dashboard"
             className="flex shrink-0 items-center gap-1.5 text-base font-bold tracking-tight whitespace-nowrap text-foreground sm:gap-2 sm:headline-md"
           >
             <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary">

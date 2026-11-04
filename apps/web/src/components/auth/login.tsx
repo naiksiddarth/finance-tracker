@@ -78,7 +78,7 @@ export function LoginForm({
         identifier,
         password,
       })
-      navigate("/")
+      navigate("/dashboard")
     } catch (err: unknown) {
       if (err instanceof ApiError) {
         setError(err)
