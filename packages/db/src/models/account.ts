@@ -9,25 +9,25 @@ export interface IAccount {
 }
 
 const AccountSchema = new mongoose.Schema<IAccount>(
-    {
-        userId: {
-            type: mongoose.Schema.Types.ObjectId,
-            index: true,
-            ref: "User",
-            required: true,
-        },
-        name: {
-            type: String,
-            index: true,
-            required: true,
-        },
-        balance: {
-            type: Number,
-            required: true,
-            default: 0,
-        },
+  {
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      index: true,
+      ref: "User",
+      required: true,
     },
-    { timestamps: true }
+    name: {
+      type: String,
+      index: true,
+      required: true,
+    },
+    balance: {
+      type: Number,
+      required: true,
+      default: 0,
+    },
+  },
+  { timestamps: true }
 )
 
 export const Account = mongoose.model<IAccount>("Account", AccountSchema)

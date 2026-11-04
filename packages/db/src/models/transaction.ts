@@ -224,6 +224,4 @@ export async function calculateMetricForMonth(
   )
 }
 
-
-
 export const Transaction = mongoose.model("Transaction", TransactionSchema)
