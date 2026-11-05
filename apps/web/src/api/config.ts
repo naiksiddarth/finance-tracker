@@ -6,8 +6,8 @@ const DEFAULT_PROFILE_PICTURE = "default-profile-picture.png"
 
 export function getProfilePictureUrl(profilePicture?: string | null) {
   if (!profilePicture || profilePicture === DEFAULT_PROFILE_PICTURE) {
-    return `${API_ORIGIN}/public/images/${DEFAULT_PROFILE_PICTURE}`
+    return `${API_ORIGIN}/api/public/images/${DEFAULT_PROFILE_PICTURE}`
   }
 
-  return `${API_ORIGIN}/uploads/${encodeURIComponent(profilePicture)}`
+  return `${API_ORIGIN}/api/uploads/${encodeURIComponent(profilePicture)}`
 }
