@@ -9,7 +9,7 @@ import { Router } from "express"
 
 const categoryRouter = Router()
 
-categoryRouter.get("/", getCategories)
+categoryRouter.get("/", verifyAccessToken, getCategories)
 categoryRouter.post(
   "/",
   verifyAccessToken,
