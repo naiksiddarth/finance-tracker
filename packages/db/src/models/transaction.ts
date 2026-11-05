@@ -7,8 +7,10 @@ import { Metric } from "./metrics.ts"
 export interface ITransaction {
   user: mongoose.Types.ObjectId
   amount: number
+  category: mongoose.Types.ObjectId
   type: TransactionType
   date: Date
+  description: string
 }
 
 const TransactionSchema = new mongoose.Schema<ITransaction>(
@@ -26,6 +28,14 @@ const TransactionSchema = new mongoose.Schema<ITransaction>(
       type: String,
       enum: TransactionTypeValues,
       required: true,
+    },
+    category: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Category",
+      required: true,
+    },
+    description: {
+      type: String,
     },
     date: {
       type: Date,

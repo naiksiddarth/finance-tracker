@@ -14,5 +14,6 @@ body:
     {
       "amount": 400,
       "type": "credit",
-      "date": "2026-10-23T00:00:00Z"
+      "date": "2026-10-23T00:00:00Z",
+      "category": "6aecc70bba3daeec806cb7c9"
     }

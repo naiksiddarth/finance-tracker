@@ -28,6 +28,8 @@ const createTransaction = asyncHandler(async (req, res) => {
             amount: data.amount,
             type: data.type,
             date: new Date(data.date),
+            category: data.category,
+            description: data.description,
           },
         ],
         { session }
@@ -75,8 +77,13 @@ const getTransactions = asyncHandler(async (req, res) => {
 })
 
 const updateTransactions = asyncHandler(async (req, res) => {
-  const { _id, amount, date } = req.body
-  const updateFields: { amount?: number; date?: Date } = {}
+  const { _id, amount, date, category, description } = req.body
+  const updateFields: {
+    amount?: number
+    date?: Date
+    category?: string
+    description?: string
+  } = {}
 
   if (amount !== undefined) {
     updateFields.amount = amount
@@ -84,6 +91,12 @@ const updateTransactions = asyncHandler(async (req, res) => {
 
   if (date !== undefined) {
     updateFields.date = new Date(date)
+  }
+  if (category !== undefined) {
+    updateFields.category = category
+  }
+  if (description !== undefined) {
+    updateFields.description = description
   }
 
   let updatedTransaction: TransactionDocument | null = null

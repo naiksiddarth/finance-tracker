@@ -27,6 +27,8 @@ export const ERROR_CODES = {
   PASSWORD_CONFIRMATION_MISMATCH: "PASSWORD_CONFIRMATION_MISMATCH",
 
   UNKNOWN_ERROR: "UNKNOWN_ERROR",
+
+  INVALID_MONGOOSE_OBJECT_ID: "INVALID_MONGOOSE_OBJECT_ID",
 } as const
 
 export const ERROR_MESSAGES: Record<ErrorCode, string> = {
@@ -56,6 +58,7 @@ export const ERROR_MESSAGES: Record<ErrorCode, string> = {
   [ERROR_CODES.USERNAME_TOO_SHORT]: "Username must be at least 4 characters long",
   [ERROR_CODES.NAME_TOO_SHORT]: "Name must be at least 3 characters long",
   [ERROR_CODES.PASSWORD_CONFIRMATION_MISMATCH]: "Passwords do not match",
+  [ERROR_CODES.INVALID_MONGOOSE_OBJECT_ID]: "Invalid Mongoose ObjectId",
 
   [ERROR_CODES.UNKNOWN_ERROR]: "An unknown error occurred",
 }
