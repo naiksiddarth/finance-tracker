@@ -11,11 +11,11 @@ body:
   type: json
   content: |-
     {
-      "name": "Siddarth Naik",
-      "username": "naiksiddarth",
-      "email": "siddarthnaik2131@gmail.com",
-      "password": "siddu3138",
-      "confirmPassword": "siddu3138"
+      "name": "Test User",
+      "username": "testuser",
+      "email": "testuser@example.com",
+      "password": "testpassword",
+      "confirmPassword": "testpassword"
     }
 scripts:
   - type: afterResponse

@@ -8,8 +8,8 @@ body:
   type: json
   content: |-
     {
-    "identifier": "siddarthnaik2131@gmail.com",
-    "password": "siddu3138"
+    "identifier": "testuser",
+    "password": "testpassword"
     }
 scripts:
   - type: afterResponse
