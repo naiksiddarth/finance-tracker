@@ -1,0 +1,17 @@
+$kind: http-request
+method: POST
+url: "{{baseUrl}}/api/category"
+order: 1000
+auth:
+  type: bearer
+  credentials:
+    token: "{{accessToken}}"
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "name": "Groceries",
+      "description": "Weekly grocery shopping"
+    }
