@@ -6,7 +6,8 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "exports": {
-    "./constants/*": "./src/enums/*/index.ts"
+    "./constants/*": "./src/enums/*/index.ts",
+    "./cache/*": "./src/cache/*.cache.ts"
   },
   "author": "Siddarth Naik",
   "license": "ISC"

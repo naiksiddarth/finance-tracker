@@ -13,5 +13,6 @@ body:
   content: |-
     {
       "name": "Groceries",
-      "description": "Weekly grocery shopping"
+      "description": "Weekly grocery shopping",
+      "type": "expense"
     }

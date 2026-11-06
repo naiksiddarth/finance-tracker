@@ -1,4 +1,5 @@
 import mongoose from "mongoose"
+import { categoryTypeValues } from "@finance-tracker/shared/constants/category"
 
 export interface ICategory {
   _id: mongoose.Types.ObjectId
@@ -6,6 +7,7 @@ export interface ICategory {
   name: string
   isDefault: boolean
   description?: string
+  type: string
   createdAt: Date
   updatedAt: Date
 }
@@ -27,6 +29,11 @@ export const CategorySchema = new mongoose.Schema<ICategory>(
     isDefault: {
       type: Boolean,
       default: false,
+    },
+    type: {
+      type: String,
+      enum: categoryTypeValues,
+      required: true,
     },
   },
   { timestamps: true }
@@ -52,4 +59,6 @@ CategorySchema.index(
   }
 )
 
-export const Category = mongoose.model<ICategory>("Category", CategorySchema)
+export const Category =
+  mongoose.models.Category ??
+  mongoose.model<ICategory>("Category", CategorySchema)
