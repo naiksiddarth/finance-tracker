@@ -7,6 +7,7 @@ export interface Transaction {
   description: string
   subtitle?: string
   category: string
+  categoryId?: string
   type: TransactionType
   amount: number
 }

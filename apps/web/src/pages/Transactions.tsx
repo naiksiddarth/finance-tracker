@@ -34,6 +34,8 @@ import { notifyTransactionsChanged } from "@/lib/transactions"
 import { useAuth } from "@/hooks/use-auth"
 import { TransactionTable } from "@/components/transactions/TransactionTable"
 import type { Transaction } from "@/types/finance"
+import { useCategories } from "@/hooks/use-categories"
+import type { Category } from "@/types/category"
 
 import type { Currency } from "@finance-tracker/shared/constants/transactions"
 
@@ -42,13 +44,21 @@ type SortOrder = "newest" | "oldest" | "highest" | "lowest"
 
 const SHORTCUT_TOOLTIP_DELAY = 3000
 
-function toTransaction(apiTransaction: {
-  _id: string
-  amount: number
-  type: "credit" | "debit"
-  date: string
-}): Transaction {
+function toTransaction(
+  apiTransaction: {
+    _id: string
+    amount: number
+    type: "credit" | "debit"
+    date: string
+    category: string
+    description?: string
+  },
+  categories: Category[]
+): Transaction {
   const isCredit = apiTransaction.type === "credit"
+  const category = categories.find(
+    (item) => item._id === apiTransaction.category
+  )
 
   return {
     id: apiTransaction._id,
@@ -58,9 +68,12 @@ function toTransaction(apiTransaction: {
       day: "numeric",
       year: "numeric",
     }),
-    description: isCredit ? "Income transaction" : "Expense transaction",
+    description:
+      apiTransaction.description ??
+      (isCredit ? "Income transaction" : "Expense transaction"),
     subtitle: isCredit ? "Incoming credit" : "Debit transaction",
-    category: "Uncategorized",
+    category: category?.name ?? "Uncategorized",
+    categoryId: apiTransaction.category,
     type: apiTransaction.type,
     amount: apiTransaction.amount,
   }
@@ -68,6 +81,7 @@ function toTransaction(apiTransaction: {
 
 export function Transactions() {
   const { currency } = useAuth()
+  const { data: categoryOptions = [] } = useCategories()
   const [transactions, setTransactions] = React.useState<Transaction[]>([])
   const [isLoading, setIsLoading] = React.useState(true)
   const [search, setSearch] = React.useState("")
@@ -86,9 +100,13 @@ export function Transactions() {
           amount: number
           type: "credit" | "debit"
           date: string
+          category: string
+          description?: string
         }>
       }>("/transaction")
-      setTransactions(response.data.map(toTransaction))
+      setTransactions(
+        response.data.map((item) => toTransaction(item, categoryOptions))
+      )
     } catch (error) {
       console.error("Failed to load transactions", error)
     } finally {
@@ -98,9 +116,9 @@ export function Transactions() {
 
   React.useEffect(() => {
     void Promise.resolve().then(() => loadTransactions())
-  }, [])
+  }, [categoryOptions])
 
-  const categories = Array.from(
+  const categoryNames = Array.from(
     new Set(transactions.map((transaction) => transaction.category))
   )
 
@@ -260,7 +278,7 @@ export function Transactions() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All categories</SelectItem>
-              {categories.map((category) => (
+              {categoryNames.map((category) => (
                 <SelectItem key={category} value={category}>
                   {category}
                 </SelectItem>

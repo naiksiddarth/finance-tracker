@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "@finance-tracker/shared": "*",
+    "@tanstack/react-query": "^5.106.1",
     "@workspace/ui": "*",
     "lucide-react": "^1.33.0",
     "react": "^19.2.6",

@@ -31,6 +31,7 @@ import { useAuth } from "@/hooks/use-auth"
 import { CurrencySymbols } from "@finance-tracker/shared/constants/transactions"
 import type { Transaction } from "@/types/finance"
 import { notifyTransactionsChanged } from "@/lib/transactions"
+import { useCategories } from "@/hooks/use-categories"
 
 export interface TransactionFormProps {
   mode: "add" | "edit"
@@ -39,8 +40,6 @@ export interface TransactionFormProps {
   transaction?: Transaction
 }
 
-const SHOW_TRANSACTION_METADATA = false
-
 export function TransactionForm({
   mode,
   onClose,
@@ -48,6 +47,11 @@ export function TransactionForm({
   transaction,
 }: TransactionFormProps) {
   const { currency } = useAuth()
+  const { data: categories = [], isLoading: isLoadingCategories } =
+    useCategories()
+  const [categoryId, setCategoryId] = React.useState(
+    transaction?.categoryId ?? ""
+  )
   const [type, setType] = React.useState<TransactionType>(
     transaction?.type === "credit" ? "income" : "expense"
   )
@@ -74,7 +78,7 @@ export function TransactionForm({
   }
 
   const handleAddTransaction = async () => {
-    if (!amount) return
+    if (!amount || !categoryId) return
     setLoading(true)
     try {
       await apiRequest("/transaction", {
@@ -83,6 +87,7 @@ export function TransactionForm({
           amount: Number(amount),
           type: type === "expense" ? "debit" : "credit",
           date: combineDateTime(),
+          category: categoryId,
         }),
       })
       notifyTransactionsChanged()
@@ -95,7 +100,7 @@ export function TransactionForm({
   }
 
   const handleSaveAndAddAnother = async () => {
-    if (!amount) return
+    if (!amount || !categoryId) return
     setLoading(true)
     try {
       await apiRequest("/transaction", {
@@ -104,6 +109,7 @@ export function TransactionForm({
           amount: Number(amount),
           type: type === "expense" ? "debit" : "credit",
           date: combineDateTime(),
+          category: categoryId,
         }),
       })
       notifyTransactionsChanged()
@@ -126,6 +132,7 @@ export function TransactionForm({
           _id: transactionId,
           amount: Number(amount),
           date: combineDateTime(),
+          category: categoryId,
         }),
       })
       notifyTransactionsChanged()
@@ -222,37 +229,40 @@ export function TransactionForm({
           )}
         </div>
       </div> */}
-      {SHOW_TRANSACTION_METADATA && (
-        /* Category and Source Account Grid */
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-          <div className="space-y-3">
-            <Label className="text-sm font-medium">Category</Label>
-            <Select defaultValue={mode === "edit" ? "groceries" : undefined}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select category..." />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="groceries">Groceries & Food</SelectItem>
-                <SelectItem value="transportation">Transportation</SelectItem>
-                <SelectItem value="entertainment">Entertainment</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="space-y-3">
-            <Label className="text-sm font-medium">Source Account</Label>
-            <Select defaultValue="chase">
-              <SelectTrigger>
-                <SelectValue placeholder="Select account..." />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="chase">Chase Sapphire (*4910)</SelectItem>
-                <SelectItem value="checking">Main Checking (*1120)</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-      )}
-
+      <div className="space-y-3">
+        <Label className="text-sm font-medium">Category</Label>
+        <Select
+          value={categoryId}
+          onValueChange={(value) => value && setCategoryId(value)}
+        >
+          <SelectTrigger>
+            <SelectValue
+              placeholder={
+                isLoadingCategories
+                  ? "Loading categories..."
+                  : "Select category..."
+              }
+            >
+              {(value) =>
+                categories.find((category) => category._id === value)?.name ??
+                "Select category..."
+              }
+            </SelectValue>
+          </SelectTrigger>
+          <SelectContent>
+            {categories.map((category) => (
+              <SelectItem key={category._id} value={category._id}>
+                {category.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        {!isLoadingCategories && categories.length === 0 && (
+          <p className="text-xs text-muted-foreground">
+            No categories are available yet.
+          </p>
+        )}
+      </div>
       {/* Date and Time Grid */}
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         <div className="space-y-3">
