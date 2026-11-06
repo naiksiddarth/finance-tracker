@@ -4,11 +4,12 @@ import {
   ArrowDownCircle,
   ArrowUpCircle,
   PiggyBank,
-  // Download,
+  Download,
 } from "lucide-react"
+import { MOCK_BUDGET_SNAPSHOT, MOCK_CATEGORY_SPENDING } from "@/data/mock-data"
 import { Button } from "@workspace/ui/components/button"
 import { ButtonGroup } from "@workspace/ui/components/button-group"
-// import { Card, CardContent } from "@workspace/ui/components/card"
+import { Card, CardContent } from "@workspace/ui/components/card"
 import { useAuth } from "@/hooks/use-auth"
 import { formatCurrency } from "@/lib/currency"
 import { apiRequest } from "@/api/client"
@@ -18,8 +19,8 @@ import type { Transaction } from "@/types/finance"
 import { MetricCard } from "../components/finance/MetricCard"
 import { IncomeExpenseChart } from "../components/dashboard/IncomeExpenseChart"
 import { RecentTransactions } from "../components/dashboard/RecentTransactions"
-// import { SpendingByCategory } from "../components/dashboard/SpendingByCategory"
-// import { BudgetSnapshot } from "../components/dashboard/BudgetSnapshot"
+import { SpendingByCategory } from "../components/dashboard/SpendingByCategory"
+import { BudgetSnapshot } from "../components/dashboard/BudgetSnapshot"
 import {
   getDashboardDateRange,
   type DashboardDateRange,
@@ -292,7 +293,7 @@ export function Dashboard() {
       {/* MAIN TWO-COLUMN WORKSPACE */}
       <div className="mb-12 grid grid-cols-1 gap-gutter lg:grid-cols-12">
         {/* LEFT COLUMN */}
-        <div className="space-y-gutter lg:col-span-12">
+        <div className="space-y-gutter lg:col-span-7">
           <IncomeExpenseChart
             data={cashFlowSummary.summary}
             period={cashFlowSummary.period}
@@ -307,7 +308,7 @@ export function Dashboard() {
         </div>
 
         {/* RIGHT COLUMN */}
-        {/* <div className="space-y-gutter lg:col-span-5">
+        { <div className="space-y-gutter lg:col-span-5">
           <SpendingByCategory categories={MOCK_CATEGORY_SPENDING} />
           <BudgetSnapshot snapshot={MOCK_BUDGET_SNAPSHOT} />
 
@@ -335,7 +336,7 @@ export function Dashboard() {
               </Button>
             </CardContent>
           </Card>
-        </div> */}
+        </div> }
       </div>
     </div>
   )
